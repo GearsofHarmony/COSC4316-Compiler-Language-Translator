@@ -9,6 +9,7 @@ enum ASCII
 	Letter,
 	Digit,
 	WS,
+	eof,
 	mop1,
 	mop2,
 	addop1,
@@ -23,10 +24,8 @@ enum ASCII
 	RP,
 	LB,
 	RB,
-	eof,
 	Other
 };
-
 /**
  * ASCII Look-up table
  */
@@ -49,7 +48,6 @@ const unsigned int ASCII[16][8] =
 	{	ASCII::Other,	ASCII::Other,	ASCII::Other,	ASCII::relop2,	ASCII::Letter,	ASCII::Other,	ASCII::Letter,	ASCII::Other	},
 	{	ASCII::Other,	ASCII::Other,	ASCII::mop2,	ASCII::Other,	ASCII::Letter,	ASCII::Other,	ASCII::Letter,	ASCII::Other	}
 };
-
 /**
  * Reserved word list
  */
@@ -66,7 +64,6 @@ const unsigned char reservedWords[][11] =
 	"THEN$",
 	"WHILE$"
 };
-
 /**
  * Data functions as a dynamic reallocation stack OR queue
  * @param 'size' is initial and current memory allocated
@@ -80,11 +77,11 @@ private:
 	int top = -1;
 	unsigned char* data = 0;
 	/**
-	 * Reallocates memory to increase size by 8 each call
+	 * Reallocates memory
 	 */
 	void realloc()
 	{
-		unsigned char* temp = new unsigned char[size += 8];
+		unsigned char* temp = new unsigned char[size];
 		for (int ii = 0; ii <= top; ii++)
 			temp[ii] = data[ii];
 		delete[] data; data = temp;
@@ -92,25 +89,40 @@ private:
 public:
 	Data() { data = new unsigned char[size]; };
 	~Data() { delete[] data; data = 0; };
+	Data& operator=(const Data& inVal)
+	{
+		if (inVal.size > this->size)
+		{
+			this->size = inVal.size;
+			this->realloc();
+		}
+		this->top = inVal.top;
+		for (int zz = 0; zz <= this->top; zz++)
+			this->data[zz] = inVal.data[zz];
+		return *this;
+	}
 	/**
 	 * Get size of stack
 	 * @return current top of stack
 	 */
 	int Size() { return top; };
 	/**
+	 * Empty the stack
+	 */
+	void empty() { top = -1; };
+	/**
 	 * Push new entry onto stack
 	 * @param[in] 'input' new value to enter stack
-	 * @throw basic when top exceeds max size the memory is reallocated
+	 * @throw basic when top exceeds max size the memory is reallocated by 8
 	 */
 	void push(unsigned char input)
 	{
-		if (top + 1 < size)
-			data[++top] = input;
-		else
+		if (top + 1 >= size)
 		{
+			size += 8;
 			realloc();
-			data[++top] = input;
 		}
+		data[++top] = input;
 	}
 	/**
 	 * Pop entry from stack
@@ -139,7 +151,6 @@ public:
 			return '\0';
 	}
 };
-
 /**
  * Simple class to write to file
  * @param 'fout' ofstream for writing to file
@@ -164,7 +175,6 @@ public:
 		if (fout.is_open() == false)
 			std::cout << "Can't open file: " << outFile << std::endl;
 	};
-	void newLine() { fout << std::endl; };
 	void write(unsigned char output) { fout << output; }
 	void write(const char* output) { fout << output; }
 	void write(Data* data)
@@ -312,138 +322,227 @@ class Scanner
 {
 private:
 	FileIn fin;
-	FileOut fToken;
-	FileOut fSymbol;
 	DecisionTable decTable;
 public:
-	Scanner(const char* inFile, const char* outFileToken, const char* outFileSymbol, const int* table, int nRow, int nCol)
+	Scanner(const char* inFile, const int* table, int nRow, int nCol)
 	{
 		fin.openFile(inFile); 
-		fToken.openFile(outFileToken); 
-		fSymbol.openFile(outFileSymbol); 
 		decTable.buildTable(table, nRow, nCol);
 	}
-	void parse()
+	int parse(Data* data)
 	{
-		int type = 0, CS = 0, DS = 0;
-		do {
-			unsigned char input;
-			unsigned int nextState = 0;
-			bool finished = false;
-			bool resWordCheck[10] = { true, true, true, true, true, true, true, true, true, true };
-			Data data;
-			while (!finished)
+		unsigned char input;
+		unsigned int nextState = 0;
+		bool finished = false;
+		bool resWordCheck[10] = { true, true, true, true, true, true, true, true, true, true };
+		while (!finished)
+		{
+			switch (nextState)
 			{
-				switch (nextState)
-				{
-				case 0:
-					nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 1: data.push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 2: data.push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read()));
-					for (int ii = 0; ii < 10; ii++)
-						if (resWordCheck[ii]) { if (reservedWords[ii][data.Size()] != data.read(data.Size())) { resWordCheck[ii] = false; } }
-					break;
-				case 3: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 4: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 5: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 6: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 7: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 8: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 9: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
-				case 10: finished = true; fin.restore(input); fToken.write(&data);
-					for (int ii = 0; ii <= 10; ii++)
-					{
-						if (ii < 10)
-						{
-							if (resWordCheck[ii] && reservedWords[ii][data.Size() + 1] == '$')
-							{
-								type = ii; fToken.write(" $");
-								for (int xx = 0; xx <= data.Size(); xx++)
-									fToken.write(reservedWords[ii][xx]);
-								break;
-							}
-						}
-						else 
-						{
-							if (type < 4)
-								fSymbol.write(&data);
-							switch (type)
-							{
-							case 0: fToken.write(" $ProgramName"); fSymbol.write(" $ProgramName "); 
-								fSymbol.write('?'); fSymbol.write(" CS"); fSymbol.writeInt(CS++); 
-								fSymbol.newLine(); DS = 0; break;
-							case 1: fToken.write(" $ProcName"); fSymbol.write(" $ProcName "); 
-								fSymbol.write('?'); fSymbol.write(" CS"); fSymbol.writeInt(CS++); 
-								fSymbol.newLine(); DS = 0; break;
-							case 2: fToken.write(" $ConstVar"); fSymbol.write(" $ConstVar "); break;
-							case 3: fToken.write(" $VarName"); fSymbol.write(" $VarName "); 
-								fSymbol.write('?'); fSymbol.write(" DS"); fSymbol.writeInt(DS++); 
-								fSymbol.newLine(); break;
-							case 4: fToken.write(" $ProcName"); break;
-							default: fToken.write(" $VarName"); break;
-							}
-						}
-					}
-					break;
-				case 11: finished = true; fin.restore(input);
-					fToken.write(&data);
-					fToken.write(" $NumLit");
-					if(type != 2)
-					{
-						fSymbol.write("lit");
-						fSymbol.write(&data);
-						fSymbol.write(" $NumLit ");
-					}
-					fSymbol.write(&data);
-					fSymbol.write(" DS"); fSymbol.writeInt(DS++); fSymbol.newLine();
-					break;
-				case 12: finished = true; fToken.write("+ $addop"); break;
-				case 13: finished = true; fToken.write("- $addop"); break;
-				case 14: finished = true; fToken.write("* $mop"); break;
-				case 15: finished = true; fin.restore(input); fToken.write("/ $mop"); break;
-				case 16: finished = true; fin.restore(input); fToken.write("> $relop"); break;
-				case 17: finished = true; fToken.write(">= $relop"); break;
-				case 18: finished = true; fin.restore(input); fToken.write("< $relop"); break;
-				case 19: finished = true; fToken.write("<= $relop"); break;
-				case 20: finished = true; fToken.write("== $relop"); break;
-				case 21: finished = true; fin.restore(input); fToken.write("= $="); break;
-				case 22: finished = true; fToken.write("!= $relop"); break;
-				case 23: finished = true; fToken.write(", $,"); break;
-				case 24: finished = true; type = 10; fToken.write("; $;"); break;
-				case 25: finished = true; fToken.write("( $("); break;
-				case 26: finished = true; fToken.write(") $)"); break;
-				case 27: finished = true; fToken.write("{ ${"); break;
-				case 28: finished = true; fToken.write("} $}"); break;
-				case 29: finished = true; break;
-				default: finished = true; std::cout << std::endl << "Bad input! " << input << std::endl; break;
-				}
-			} 
-			fToken.newLine();
-		} while (!fin.isEOF());
+			case 0: data->empty(); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 1: data->push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 2: data->push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read()));
+				for (int ii = 0; ii < 10; ii++)
+					if (resWordCheck[ii]) { 
+						if (reservedWords[ii][data->Size()] != data->read(data->Size())) { resWordCheck[ii] = false; } }
+				break;
+			case 3: data->push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 4: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 5: nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 6: data->push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 7: data->push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 8: data->push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 9: data->push(input); nextState = decTable.index(nextState, fin.encode(input = fin.read())); break;
+			case 10: finished = true; fin.restore(input);
+				for (int ii = 0; ii <= 10; ii++)
+					if (ii < 10) 
+						if (resWordCheck[ii] && reservedWords[ii][data->Size() + 1] == '$') 
+						{ nextState = ii;	break; }
+				break;
+			case 11: finished = true; fin.restore(input); break;
+			case 12: finished = true; data->push(input); break;
+			case 13: finished = true; data->push(input); break;
+			case 14: finished = true; data->push(input); break;
+			case 15: finished = true; fin.restore(input); break;
+			case 16: finished = true; fin.restore(input); break;
+			case 17: finished = true; data->push(input); break;
+			case 18: finished = true; fin.restore(input); break;
+			case 19: finished = true; data->push(input); break;
+			case 20: finished = true; fin.restore(input); break;
+			case 21: finished = true; data->push(input); break;
+			case 22: finished = true; data->push(input); break;
+			case 23: finished = true; data->push(input); break;
+			case 24: finished = true; data->push(input); break;
+			case 25: finished = true; data->push(input); break;
+			case 26: finished = true; data->push(input); break;
+			case 27: finished = true; data->push(input); break;
+			case 28: finished = true; data->push(input); break;
+			case 29: finished = true; data->push(input); break;
+			default: finished = true; std::cout << std::endl << "Bad input! " << input << std::endl; break;
+			}
+		}
+		return nextState;
 	}
 };
-
+/**
+ * Parses and writes to token table file
+ * @param 'type' identifies if variable name is 
+ *		ConstVar, ProgramName, VarName, or ProcName
+ * @param 'fout' output file
+ * @param 'decTable' decision table for parse
+ */
+class TokenTable
+{
+private:
+	int type = 0;
+	FileOut fout;
+	DecisionTable decTable;
+public:
+	TokenTable(const char* outFile, const int* table, int nRow, int nCol)
+	{
+		fout.openFile(outFile);
+		decTable.buildTable(table, nRow, nCol);
+	};
+	bool entry(int input, Data* data)
+	{
+		bool finished = false;
+		int nextState = decTable.index(0, input);
+		if (nextState < 13)
+			fout.write(data);
+		switch (nextState)
+		{
+		case 0: 
+			type = input; fout.write(" $");
+			for (int xx = 0; xx <= data->Size(); xx++)
+				fout.write(reservedWords[type][xx]);
+			fout.write('\n');
+			break;
+		case 1:
+			switch (type)
+			{
+			case 0: fout.write(" $ProgramName\n"); break;
+			case 1: fout.write(" $ProcName\n"); break;
+			case 2: fout.write(" $ConstVar\n"); break;
+			case 3: fout.write(" $VarName\n"); break;
+			case 4: fout.write(" $ProcName\n"); break;
+			default: type = 3; break;
+			}
+			break;
+		case 2: fout.write(" $NumLit\n"); break;
+		case 3: fout.write(" $addop\n"); break;
+		case 4: fout.write(" $mop\n"); break;
+		case 5: fout.write(" $relop\n"); break;
+		case 6: fout.write(" $=\n"); break;
+		case 7: fout.write(" $,\n"); break;
+		case 8: fout.write(" $;\n"); break;
+		case 9: fout.write(" $(\n"); break;
+		case 10: fout.write(" $)\n"); break;
+		case 11: fout.write(" ${\n"); break;
+		case 12: fout.write(" $}\n"); break;
+		case 13: finished = true; break;
+		default: finished = true; std::cout << std::endl << "Bad input! " << std::endl; break;
+		}
+		return finished;
+	}
+};
+/**
+ * Parses and writes to symbol table file
+ * @param 'type' identifies if variable name is 
+ *		ConstVar, ProgramName, VarName, or ProcName
+ * @param 'DS' Data Segment location
+ * @param 'CS' Code Segment location
+ * @param 'fout' output file
+ * @param 'decTable' decision table for parse
+ */
+class SymbolTable
+{
+private:
+	int type = 0;
+	int DS = 0, CS = 0;
+	FileOut fout;
+	DecisionTable decTable;
+public:
+	SymbolTable(const char* outFile, const int* table, int nRow, int nCol)
+	{
+		fout.openFile(outFile);
+		decTable.buildTable(table, nRow, nCol);
+	};
+	void entry(int input, Data* data)
+	{
+		int nextState = decTable.index(0, input);
+		switch (nextState)
+		{
+		case 0:
+			type = input; break;
+		case 1:
+			if (type < 4)
+				fout.write(data);
+			switch (type)
+			{
+			case 0: 
+				fout.write(" $ProgramName ");
+				fout.write('?'); fout.write(" CS"); fout.writeInt(CS++);
+				fout.write('\n'); DS = 0; break;
+			case 1: 
+				fout.write(" $ProcName ");
+				fout.write('?'); fout.write(" CS"); fout.writeInt(CS++);
+				fout.write('\n'); DS = 0; break;
+			case 2: fout.write(" $ConstVar "); break;
+			case 3: 
+				fout.write(" $VarName ");
+				fout.write('?'); fout.write(" DS"); fout.writeInt(DS++);
+				fout.write('\n'); break;
+			default: break;
+			}
+			break;
+		case 2:
+			if (type != 2)
+			{
+				fout.write("lit"); fout.write(data); fout.write(" $NumLit ");
+			}
+			fout.write(data); fout.write(" DS"); fout.writeInt(DS++); fout.write('\n');
+			break;
+		case 3: type = 4; break;
+		default: break;
+		}
+	}
+};
+/**
+ * main program
+ */
 int main()
 {
-	int table[] =
+	Data data;
+	int table1[] =
 	{
 		/**
-		 *	0 - 8: Letter, Digit, WS, mop1, mop2, addop1, addop2, relop1, relop2,
-		 *	9 - 17: relop3, assign, comma, semi, LP, RP, LB, RB, eof,
+		 *	0 - 8: Letter, Digit, WS,  eof, mop1, mop2, addop1, addop2, relop1,
+		 *	9 - 17: relop2, relop3, assign, comma, semi, LP, RP, LB, RB,
 		 *	18: Other
 		 */
-		2,	1,	0,	14,	3,	12,	13,	6,	7,	9,	8,	23,	24,	25,	26,	27,	28,	29,	-1,	// State 0
+		2,	1,	0,	29,	14,	3,	12,	13,	6,	7,	9,	8,	23,	24,	25,	26,	27,	28,	-1,	// State 0
 		11,	1,	11,	11,	11,	11,	11,	11,	11,	11,	11,	11,	11,	11,	11,	11,	11,	11,	-1,	// State 1
 		2,	2,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	10,	-1,	// State 2
-		15,	15,	15,	4,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	-1,	// State 3
-		4,	4,	4,	5,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	// State 4
-		4,	4,	4,	4,	0,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	// State 5
-		18,	18,	18,	18,	18,	18,	18,	18,	18,	18,	19,	18,	18,	18,	18,	18,	18,	18,	-1,	// State 6
-		16,	16,	16,	16,	16,	16,	16,	16,	16,	16,	17,	16,	16,	16,	16,	16,	16,	16,	-1,	// State 7
-		21,	21,	21,	21,	21,	21,	21,	21,	21,	21,	20,	21,	21,	21,	21,	21,	21,	21,	-1,	// State 8
-		-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	22,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1	// State 9
+		15,	15,	15,	15,	4,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	15,	-1,	// State 3
+		4,	4,	4,	4,	5,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	// State 4
+		4,	4,	4,	4,	4,	0,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	4,	// State 5
+		16,	16,	16,	16,	16,	16,	16,	16,	16,	16,	16,	17,	16,	16,	16,	16,	16,	16,	-1,	// State 6
+		18,	18,	18,	18,	18,	18,	18,	18,	18,	18,	18,	19,	18,	18,	18,	18,	18,	18,	-1,	// State 7
+		20,	20,	20,	20,	20,	20,	20,	20,	20,	20,	20,	21,	20,	20,	20,	20,	20,	20,	-1,	// State 8
+		-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	-1,	22,	-1,	-1,	-1,	-1,	-1,	-1,	-1	// State 9
 	};
-	Scanner scan("Java0.txt", "TokenTable.txt", "SymbolTable.txt", table, 10, ASCII::Other + 1);
-	scan.parse();
+	int table2[30] =
+	{ 0,0,0,0,0,0,0,0,0,0,1,2,3,3,4,4,5,5,5,5,6,5,5,7,8,9,10,11,12,13 };
+	int table3[30] =
+	{ 0,0,0,0,0,0,0,0,0,0,1,2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,3,-1,-1,-1,-1,-1 };
+	Scanner scan("Java0.txt", table1, 10, ASCII::Other + 1); 
+	TokenTable token("TokenTable.txt", table2, 1, 30);
+	SymbolTable symbol("SymbolTable.txt", table3, 1, 30);
+	int input;
+	do
+	{
+		input = scan.parse(&data);
+		symbol.entry(input, &data);
+	} while (!token.entry(input, &data));
 	return 0;
 }
