@@ -1,0 +1,19 @@
+simplestmt ::= ident = exp
+exp ::= term
+exp ::= exp + term 
+exp ::= exp - term 
+term ::= fac
+term ::= term * fac
+term ::= term / fac
+fac ::= ( exp )
+
+ifstmt ::= IF be THEN stmt
+be ::= ODD exp
+be ::= exp relop exp
+relop ::= ==
+relop ::= !=
+relop ::= >
+relop ::= <
+relop ::= >=
+relop ::= <=
+

@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="IO Files">
+      <UniqueIdentifier>{1fd2094e-51b8-4242-80b4-fbf6fe74476d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -21,19 +24,54 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="Java0.txt">
-      <Filter>Source Files</Filter>
-    </Text>
-    <Text Include="TokenTable.txt">
-      <Filter>Source Files</Filter>
+      <Filter>IO Files</Filter>
     </Text>
     <Text Include="mainJava0.txt">
-      <Filter>Source Files</Filter>
-    </Text>
-    <Text Include="testJava0.txt">
-      <Filter>Source Files</Filter>
+      <Filter>IO Files</Filter>
     </Text>
     <Text Include="SymbolTable.txt">
-      <Filter>Source Files</Filter>
+      <Filter>IO Files</Filter>
     </Text>
+    <Text Include="TokenTable.txt">
+      <Filter>IO Files</Filter>
+    </Text>
+    <Text Include="Grammer.txt">
+      <Filter>IO Files</Filter>
+    </Text>
+    <Text Include="Test2Q3.txt">
+      <Filter>IO Files</Filter>
+    </Text>
+    <Text Include="Test2Q5.txt">
+      <Filter>IO Files</Filter>
+    </Text>
+    <Text Include="TestGrammer.txt">
+      <Filter>IO Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileIO.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Data.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Pass1.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Nodes.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grammar.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Stack.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PrecedenceGenerator.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

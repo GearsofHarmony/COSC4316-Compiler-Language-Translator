@@ -1,8 +1,11 @@
-Pgm1 $ProgramName ? CS0
-M $ConstVar 13 DS0
-N $ConstVar 56 DS1
-X $VarName ? DS2
-Y $VarName ? DS3
-Z $VarName ? DS4
-lit97 $NumLit 97 DS5
-lit18 $NumLit 18 DS6
+Pgm1 $ProgramName ? CS 0
+M $ConstVar 13 DS 0
+N $ConstVar 56 DS 2
+X $VarName ? DS 4
+Y $VarName ? DS 6
+Z $VarName ? DS 8
+lit97 $NumLit 97 DS 10
+lit18 $NumLit 18 DS 12
+T1 $TempVar ? DS 14
+T2 $TempVar ? DS 16
+T3 $TempVar ? DS 18
