@@ -142,8 +142,10 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="TestGrammer.txt" />
-    <Text Include="Grammer.txt" />
+    <Text Include="DecisionTablesList.txt" />
+    <Text Include="Quads.txt" />
+    <Text Include="TestGrammar.txt" />
+    <Text Include="Grammar.txt" />
     <Text Include="Java0.txt" />
     <Text Include="mainJava0.txt" />
     <Text Include="SymbolTable.txt" />
@@ -154,12 +156,17 @@
   <ItemGroup>
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Data.hpp" />
+    <ClInclude Include="DecisionTables.hpp" />
     <ClInclude Include="FileIO.hpp" />
     <ClInclude Include="Grammar.hpp" />
     <ClInclude Include="Nodes.hpp" />
     <ClInclude Include="Pass1.hpp" />
     <ClInclude Include="PrecedenceGenerator.hpp" />
     <ClInclude Include="Stack.hpp" />
+    <ClInclude Include="SyntaxPass.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Java0.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

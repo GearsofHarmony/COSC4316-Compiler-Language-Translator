@@ -1,0 +1,66 @@
+program ::= CLASS Pgmident { block }
+
+block ::= constdefpart variabledefpart proceduredefpart stmt
+
+constdefpart ::= CONST constlist;
+constdefpart ::= empty
+constlist ::= constlist,  Constident = integer
+constlist ::= Constident = integer 
+
+variabledefpart ::= VAR varlist;
+variabledefpart ::= empty
+varlist ::= varlist, Varident
+varlist ::= Varident
+
+proceduredefpart ::= procedurelist
+proceduredefpart ::= empty
+procedurelist ::= procedurelist PROCEDURE Procident parmlist { block }
+procedurelist ::= PROCEDURE Procident parmlist { block }
+parmlist ::= ( identlist )
+parmlist ::= ( )
+identlist ::= identlist, ident
+identlist ::= ident
+
+stmt ::= compoundstmt
+stmt ::= stmtlist
+stmt ::= empty
+
+empty ::= 
+
+simplestmt ::= ident = exp
+simplestmt ::= GET ident
+simplestmt ::= PRINT ident
+callstmt ::= CALL Procident parmlist
+compoundstmt ::= { stmtlist }
+stmtlist ::= simplestmt; stmtlist
+stmtlist ::= callstmt; stmtlist
+stmtlist ::= ifstmt stmtlist
+stmtlist ::= whilestmt stmtlist
+stmtlist ::= simplestmt;
+stmtlist ::= callstmt;
+stmtlist ::= ifstmt
+stmtlist ::= whilestmt
+ifstmt ::= IF be THEN compoundstmt
+ifstmt ::= IF be THEN simplestmt;
+ifstmt ::= IF be THEN callstmt;
+whilestmt ::= WHILE be DO compoundstmt
+whilestmt ::= WHILE be DO simplestmt;
+whilestmt ::= WHILE be DO callstmt;
+
+be ::= ODD exp
+be ::= exp == exp
+be ::= exp != exp
+be ::= exp > exp
+be ::= exp < exp
+be ::= exp >= exp
+be ::= exp <= exp
+
+exp ::= exp + term
+exp ::= exp - term
+exp ::= term
+term ::= term * fac
+term ::= term / fac
+term ::= fac
+fac ::= ( exp )
+fac ::= ident
+fac ::= integer

@@ -4,10 +4,12 @@
 #include "Constants.h"
 #include "Grammar.hpp"
 
+namespace PrecGenDBG { const bool DBG = 0; };
+
 class MatN
 {
 public:
-	static const int MatNSize = 48;
+	static const int MatNSize = 50;
 	short mat[MatNSize][MatNSize];
 	MatN()
 	{
@@ -96,12 +98,16 @@ MatN warshall(const MatN& table)
 	}
 	return temp;
 }
-void printMat(const MatN& Result, const char* msg = "Result\n")
+MatN matStar(const MatN& table)
+{
+	return (MatN::Identity() | warshall(table));
+}
+void printMat(const MatN& Result, const char* msg = "Table\n")
 {
 	std::cout << msg;
 	for (int row = 0; row < MatN::MatNSize; row++)
 	{
-		if (row == numNonTerm)
+		if (row == NumNonTerm)
 			std::cout << '\n';
 		if (row <= 9)
 			std::cout << ' ';
@@ -109,7 +115,7 @@ void printMat(const MatN& Result, const char* msg = "Result\n")
 		for (int col = 0; col < MatN::MatNSize; col++)
 		{
 			int temp = 0x7 & Result.mat[row][col];
-			if (col == numNonTerm)
+			if (col == NumNonTerm)
 				std::cout << ' ';
 			if (temp <= 9)
 				std::cout << ' ';
@@ -131,7 +137,7 @@ void printMat(const MatN& Result, const int* rows, const int size)
 		for (int col = 0; col < size; col++)
 		{
 			int temp = 0x7 & Result.mat[rows[row]][rows[col]];
-			if (col == numNonTerm)
+			if (col == NumNonTerm)
 				std::cout << ' ';
 			if (temp <= 9)
 				std::cout << ' ';
@@ -146,262 +152,259 @@ void printMat(const MatN& Result, const int* rows, const int size)
 class PrecTableGen
 {
 private:
-	typedef Node<Grammar::IDNode> Node;
 	DecisionTable decTable;
-	Node List[listNonTerm];
 public:
-	PrecTableGen(const int* table, int nRow, int nCol)
+	PrecTableGen(const char* table)
 	{
-		decTable.buildTable2D(table, nRow, nCol);
-		GramParse(List);
-		if (DBG)
-		{
-			for (int ii = 0; ii < listNonTerm; ii++)
-			{
-				for (int xx = 0; xx < 20; xx++)
-				{
-					if (nonTermList[ii][xx] == '$')
-					{
-						break;
-					}
-					std::cout << nonTermList[ii][xx];
-				}
-				std::cout << " ::= ";
-				Node::printList(&List[ii]);
-				std::cout << '\n';
-			}
-			std::cout << std::endl;
-		}
+		decTable.buildTable(table);
 	}
-	MatN generateFirst()
+	MatN generateFirst(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
-		if (DBG) std::cout << "First:\n";
-		for (int index = 0; index < listNonTerm; index++)
+		if (PrecGenDBG::DBG) std::cout << "First:\n";
+		for (int index = 0; index < ListNonTerm; index++)
 		{
-			if (!Node::isEmpty(&List[index]))
+			if (!Node<Grammar::IDNode>::isEmpty(&List[index]))
 			{
-				int size = Node::getSize(&List[index]);
-				Grammar::ID idCol = Node::getData(&List[index], 0).data;
-				int col = decTable.index2D(idCol.isTerm, idCol.type);
-				table.mat[index][col] = 1;
-				if (DBG) std::cout << idCol << '\n';
-				for (int ii = 1; ii < size; ii++)
-				{
-					idCol = Node::getData(&List[index], ii).data;
-					col = decTable.index2D(idCol.isTerm, idCol.type);
-					if (col == 53)
-					{
-						idCol = Node::getData(&List[index], ++ii).data;
-						col = decTable.index2D(idCol.isTerm, idCol.type);
-						table.mat[index][col] = 1;
-						if (DBG) std::cout << idCol << '\n';
-					}
-				}
-			}
-		}
-		if (DBG) std::cout << '\n';
-		return table;
-	}
-	MatN generateWithin()
-	{
-		MatN table = MatN::ZeroMat();
-		if (DBG) std::cout << "Within:\n";
-		for (int index = 0; index < listNonTerm; index++)
-		{
-			int size = Node::getSize(&List[index]);
-			for (int ii = 0; ii < size;)
-			{
-				Grammar::ID idRow = Node::getData(&List[index], ii).data;
-				int row = decTable.index2D(idRow.isTerm, idRow.type);
-				Grammar::ID idCol = Node::getData(&List[index], ++ii).data;
-				int col = decTable.index2D(idCol.isTerm, idCol.type);
-				if ((row != 53 && col != 53) && ii < size)
-				{
-					table.mat[row][col] = 1;
-					if (DBG) std::cout << idRow << ' ' << idCol << '\n';
-				}
-			}
-		}
-		if (DBG) std::cout << '\n';
-		return table;
-	}
-	MatN generateLast()
-	{
-		MatN table = MatN::ZeroMat();
-		if (DBG) std::cout << "Last:\n";
-		for (int index = 0; index < listNonTerm; index++)
-		{
-			if (!Node::isEmpty(&List[index]))
-			{
-				int size = Node::getSize(&List[index]);
-				for (int ii = 0; ii <= size; ii++)
-				{
-					Grammar::ID idCol = Node::getData(&List[index], ii).data;
-					int col = decTable.index2D(idCol.isTerm, idCol.type);
-					if (col == 53 || ii >= size)
-					{
-						idCol = Node::getData(&List[index], ii - 1).data;
-						col = decTable.index2D(idCol.isTerm, idCol.type);
-						table.mat[index][col] = 1;
-						if (DBG) std::cout << idCol << '\n';
-					}
-				}
-			}
-		}
-		if (DBG) std::cout << '\n';
-		return table;
-	}
-	MatN generateFirstTerm()
-	{
-		MatN table = MatN::ZeroMat();
-		if (DBG) std::cout << "First Term:\n";
-		for (int index = 0; index < listNonTerm; index++)
-		{
-			bool first = false;
-			if (!Node::isEmpty(&List[index]))
-			{
-				int size = Node::getSize(&List[index]);
+				Data<Grammar::ID> temp;
+				Grammar::ID check;
+				int size = Node<Grammar::IDNode>::getSize(&List[index]);
 				for (int ii = 0; ii < size; ii++)
 				{
-					Grammar::ID idCol = Node::getData(&List[index], ii).data;
-					int col = decTable.index2D(idCol.isTerm, idCol.type);
-					if (col >= numNonTerm && col != 53 && !first)
+					check = Node<Grammar::IDNode>::getData(&List[index], ii).data;
+					if (check.cmp(Grammar::ID(0, IDEval)))
 					{
-						for (int xx = 0; xx < 2; xx++)
+						if (temp.Size() >= 0)
 						{
-							first = true;
-							table.mat[index][col] = 1;
-							if (DBG) std::cout << idCol << '\n';
-							break;
+							check = temp.read(0);
+							table.mat[index][decTable.index2D(check.isTerm, check.type)] = 1;
+							temp.empty();
+							if (PrecGenDBG::DBG) std::cout << check << '\n';
 						}
 					}
-					else if (col == 53)
+					else
 					{
-						first = false;
+						temp.push(check);
 					}
 				}
 			}
 		}
-		if (DBG) std::cout << '\n';
+		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
 	}
-	MatN generateWithinTerm()
+	MatN generateWithin(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
-		if (DBG) std::cout << "Within Term:\n";
-		for (int index = 0; index < listNonTerm; index++)
+		if (PrecGenDBG::DBG) std::cout << "Within:\n";
+		for (int index = 0; index < ListNonTerm; index++)
 		{
-			if (!Node::isEmpty(&List[index]))
+			if (!Node<Grammar::IDNode>::isEmpty(&List[index]))
 			{
-				int size = Node::getSize(&List[index]);
-				for (int ii = 0; ii < size;)
+				Data<Grammar::ID> temp;
+				Grammar::ID check;
+				int size = Node<Grammar::IDNode>::getSize(&List[index]);
+				for (int ii = 0; ii < size; ii++)
 				{
-					Grammar::ID idRow = Node::getData(&List[index], ii++).data;
-					int row = decTable.index2D(idRow.isTerm, idRow.type);
-					if (row >= numNonTerm && row != 53)
+					check = Node<Grammar::IDNode>::getData(&List[index], ii).data;
+					if (check.cmp(Grammar::ID(0, IDEval)))
 					{
-						for (int xx = 0; xx < 2; xx++)
+						check = temp.pop();
+						while (temp.Size() >= 0)
 						{
-							Grammar::ID idCol = Node::getData(&List[index], ii++).data;
-							int col = decTable.index2D(idCol.isTerm, idCol.type);
-							if (col >= numNonTerm && col != 53 && ii <= size)
-							{
-								table.mat[row][col] = 1;
-								ii--;
-								if (DBG) std::cout << idRow << ' ' << idCol << '\n';
-								break;
-							}
-							else if (col == 53)
-							{
-								break;
-							}
+							Grammar::ID row = temp.pop();
+							table.mat[decTable.index2D(row.isTerm, row.type)][decTable.index2D(check.isTerm, check.type)] = 1;
+							if (PrecGenDBG::DBG) std::cout << row << ' ' << check << '\n';
+							check = row;
 						}
+					}
+					else
+					{
+						temp.push(check);
 					}
 				}
 			}
 		}
-		if (DBG) std::cout << '\n';
+		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
 	}
-	MatN generateLastTerm()
+	MatN generateLast(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
-		if (DBG) std::cout << "Last Term:\n";
-		for (int index = 0; index < listNonTerm; index++)
+		if (PrecGenDBG::DBG) std::cout << "Last:\n";
+		for (int index = 0; index < ListNonTerm; index++)
 		{
-			if (!Node::isEmpty(&List[index]))
+			if (!Node<Grammar::IDNode>::isEmpty(&List[index]))
 			{
-				int size = Node::getSize(&List[index]);
-				for (int ii = 0; ii < size;)
+				Data<Grammar::ID> temp;
+				Grammar::ID check;
+				int size = Node<Grammar::IDNode>::getSize(&List[index]);
+				for (int ii = 0; ii < size; ii++)
 				{
-					Grammar::ID idCol = Node::getData(&List[index], ii++).data;
-					int col = decTable.index2D(idCol.isTerm, idCol.type);
-					int offset = 0;
-					if (ii == size || col == 53)
+					check = Node<Grammar::IDNode>::getData(&List[index], ii).data;
+					if (check.cmp(Grammar::ID(0, IDEval)))
 					{
-						if (col == 53)
-							offset = 1;
-						for (int xx = 1 + offset; xx <= (2 + offset); xx++)
+						if (temp.Size() >= 0)
 						{
-							if ((ii - xx) >= 0)
-							{
-								idCol = Node::getData(&List[index], ii - xx).data;
-								col = decTable.index2D(idCol.isTerm, idCol.type);
-								if (col >= numNonTerm && col != 53)
-								{
-									col = decTable.index2D(idCol.isTerm, idCol.type);
-									table.mat[index][col] = 1;
-									if (DBG) std::cout << idCol << '\n';
-									break;
-								}
-							}
-
+							check = temp.read(temp.Size());
+							table.mat[index][decTable.index2D(check.isTerm, check.type)] = 1;
+							temp.empty();
+							if (PrecGenDBG::DBG) std::cout << check << '\n';
 						}
+					}
+					else
+					{
+						temp.push(check);
 					}
 				}
 			}
 		}
-		if (DBG) std::cout << '\n';
+		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
+	}
+	MatN generateFirstTerm(Node<Grammar::IDNode>* List)
+	{
+		MatN table = MatN::ZeroMat();
+		if (PrecGenDBG::DBG) std::cout << "First Term:\n";
+		for (int index = 0; index < ListNonTerm; index++)
+		{
+			if (!Node<Grammar::IDNode>::isEmpty(&List[index]))
+			{
+				Data<Grammar::ID> temp;
+				Grammar::ID check;
+				int size = Node<Grammar::IDNode>::getSize(&List[index]);
+				for (int ii = 0; ii < size; ii++)
+				{
+					check = Node<Grammar::IDNode>::getData(&List[index], ii).data;
+					if (check.cmp(Grammar::ID(0, IDEval)))
+					{
+						if (temp.Size() >= 0)
+						{
+							if (temp.read(0).isTerm)
+							{
+								check = temp.read(0);
+							}
+							else if (temp.read(1).isTerm)
+							{
+								check = temp.read(1);
+							}
+							if (check.isTerm)
+							{
+								table.mat[index][decTable.index2D(check.isTerm, check.type)] = 1;
+								if (PrecGenDBG::DBG) std::cout << check << '\n';
+							}
+							temp.empty();
+						}
+					}
+					else
+					{
+						temp.push(check);
+					}
+				}
+			}
+		}
+		if (PrecGenDBG::DBG) std::cout << '\n';
+		return table;
+	}
+	MatN generateWithinTerm(Node<Grammar::IDNode>* List)
+	{
+		MatN table = MatN::ZeroMat();
+		if (PrecGenDBG::DBG) std::cout << "Within Term:\n";
+		for (int index = 0; index < ListNonTerm; index++)
+		{
+			if (!Node<Grammar::IDNode>::isEmpty(&List[index]))
+			{
+				Data<Grammar::ID> temp;
+				Grammar::ID check;
+				int size = Node<Grammar::IDNode>::getSize(&List[index]);
+				for (int ii = 0; ii < size; ii++)
+				{
+					check = Node<Grammar::IDNode>::getData(&List[index], ii).data;
+					if (check.cmp(Grammar::ID(0, IDEval)))
+					{
+						check = temp.pop();
+						while (temp.Size() >= 0)
+						{
+							Grammar::ID row = temp.pop();
+							table.mat[decTable.index2D(row.isTerm, row.type)][decTable.index2D(check.isTerm, check.type)] = 1;
+							if (PrecGenDBG::DBG) std::cout << row << ' ' << check << '\n';
+							check = row;
+						}
+					}
+					else if (check.isTerm)
+					{
+						temp.push(check);
+					}
+				}
+			}
+		}
+		if (PrecGenDBG::DBG) std::cout << '\n';
+		return table;
+	}
+	MatN generateLastTerm(Node<Grammar::IDNode>* List)
+	{
+		MatN table = MatN::ZeroMat();
+		if (PrecGenDBG::DBG) std::cout << "Last Term:\n";
+		for (int index = 0; index < ListNonTerm; index++)
+		{
+			if (!Node<Grammar::IDNode>::isEmpty(&List[index]))
+			{
+				Data<Grammar::ID> temp;
+				Grammar::ID check;
+				int size = Node<Grammar::IDNode>::getSize(&List[index]);
+				for (int ii = 0; ii < size; ii++)
+				{
+					check = Node<Grammar::IDNode>::getData(&List[index], ii).data;
+					if (check.cmp(Grammar::ID(0, IDEval)))
+					{
+						if (temp.Size() >= 0)
+						{
+							if (temp.read(temp.Size()).isTerm)
+							{
+								check = temp.read(0);
+							}
+							else if (temp.read(temp.Size() - 1).isTerm)
+							{
+								check = temp.read(1);
+							}
+							if(check.isTerm)
+							{
+								table.mat[index][decTable.index2D(check.isTerm, check.type)] = 1;
+								if (PrecGenDBG::DBG) std::cout << check << '\n';
+							}
+							temp.empty();
+						}
+					}
+					else
+					{
+						temp.push(check);
+					}
+				}
+			}
+		}
+		if (PrecGenDBG::DBG) std::cout << '\n';
+		return table;
+	}
+	MatN OPG(Node<Grammar::IDNode>* List)
+	{
+		MatN Equal = generateWithin(List) | generateWithinTerm(List);
+		MatN Yield = (Equal & matStar(generateFirst(List))) & generateFirstTerm(List);
+		MatN Take = MatN::transpose(matStar(generateLast(List)) & generateLastTerm(List)) & Equal;
+		return ((2 * Yield) | (4 * Equal) | (1 * Take));
+	}
+	MatN PGTable(Node<Grammar::IDNode>* List)
+	{
+		MatN Equal = generateWithin(List);
+		MatN Yield = Equal & warshall(generateFirst(List));
+		MatN Take = (MatN::transpose(warshall(generateLast(List))) & Equal) & matStar(generateFirst(List));
+		return ((2 * Yield) | (4 * Equal) | (1 * Take));
+	}
+	MatN testTable(int entry, Node<Grammar::IDNode>* List)
+	{
+		//MatN Equal = warshall(generateWithin(List));
+		MatN Equal = generateWithin(List);
+		MatN First = warshall(generateFirst(List));
+		MatN Test = MatN::ZeroMat(); Test.mat[entry][entry] = 1;
+		return Equal & First & Test;
 	}
 };
-
-MatN OPG()
-{
-	/**
-	 *	False: Non-Terminal
-	 *	0 - 25 ::= Identities
-	 *	26 - 30 ::= 29 -> '::='
-	 *	True: Terminal
-	 *	0 - 9 ::= CLASS, PROCEDURE, CONST, VAR, CALL, DO, WHILE, IF, THEN, ODD
-	 *	10 - 11 ::= Name, NumLit
-	 *	12 - 15 ::= +, -, *, /
-	 *	16 - 21 ::= <, <=, >, >=, ==, !=
-	 *	22 ::= =
-	 *	23 - 24 ::= ',', ';'
-	 *	25 - 28 ::= '(', ')', '{', '}'
-	 *	29 - 30 ::= ::=, EOF
-	 */
-	int convertTable[] =
-	{
-		// False
-		 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,
-		-1,-1,-1,53,-1,
-		// True
-		26,27,28,29,30,31,32,33,34,35,
-		24,25,
-		38,38,39,39,
-		40,40,40,40,40,40,
-		41,
-		42,43,
-		44,45,46,47,
-		-1,-1,
-	};
-	PrecTableGen precTable(convertTable, 2, IDeof + 1);
-	MatN Equal = precTable.generateWithin() | precTable.generateWithinTerm();
-	MatN Yield = (Equal & (MatN::Identity() | warshall(precTable.generateFirst()))) & precTable.generateFirstTerm();
-	MatN Take = MatN::transpose((MatN::Identity() | warshall(precTable.generateLast())) & precTable.generateLastTerm()) & Equal;
-	return ((2 * Yield) | (4 * Equal) | (1 * Take));
-}
 #endif // !PRECEDENCEGENERATOR_HPP

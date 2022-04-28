@@ -1,4 +1,4 @@
-simplestmt ::= ident = exp
+stmt ::= ident = exp
 exp ::= term
 exp ::= exp + term 
 exp ::= exp - term 
@@ -6,6 +6,7 @@ term ::= fac
 term ::= term * fac
 term ::= term / fac
 fac ::= ( exp )
+fac ::= ident
 
 ifstmt ::= IF be THEN stmt
 be ::= ODD exp

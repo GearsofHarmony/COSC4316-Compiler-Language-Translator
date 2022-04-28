@@ -1,6 +1,9 @@
 #ifndef STACK_HPP
 #define STACK_HPP
 #include <iostream>
+#include "Constants.h"
+
+namespace StackDBG { const bool DBG = 0; };
 
 int truncate(float inVal)
 {
@@ -66,7 +69,7 @@ private:
 		if ((float)AvailSpace < minSpace - 1.0f)
 		{
 			//terminate program
-			std::cout << "Reallocation failed! No memory left!";
+			if (StackDBG::DBG) std::cout << "Reallocation failed! No memory left!";
 			resize();
 			AvailSpace = base[numStacks] - base[0];
 			for (int ii = numStacks - 1; ii >= 0; ii--)
@@ -182,7 +185,7 @@ public:
 			{
 				std::cout << ll << ") " << stack[ll];
 				if (ll < top[index])
-					std::cout << ", ";
+					std::cout << " ";
 			}
 		}
 	}
@@ -232,23 +235,26 @@ public:
 		}
 		else
 		{
-			/*std::cout << "Error Not Enough Space!\nTransaction Causing Overflow:> " << inVal << "\nContent of Memory at Overflow\n";
-			print();
-			std::cout << "Reallocating...\n";*/
+			if (StackDBG::DBG)
+			{
+				std::cout << "Error Not Enough Space!\nTransaction Causing Overflow:> " << inVal << "\nContent of Memory at Overflow\n";
+				print();
+				std::cout << "Reallocating...\n";
+			}
 			if (reallocate())
 			{
 				resize();//return;
 			}
 			--top[index];
-			//std::cout << "Repacking...\n";
+			if (StackDBG::DBG) std::cout << "Repacking...\n";
 			moveStack();
 			stack[++top[index]] = inVal;
-			//std::cout << "Content of Memory After Repack:\n";
+			if (StackDBG::DBG) std::cout << "Content of Memory After Repack:\n";
 			for (int ii = 0; ii < numStacks; ii++)
 			{
 				oneArray[ii] = top[ii];
 			}
-			//print();
+			if (StackDBG::DBG) print();
 		}
 	}
 	/** 

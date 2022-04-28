@@ -40,8 +40,7 @@ private:
 	unsigned char receive(const int num)
 	{
 		unsigned int temp = 0;
-		if (numbits < num)
-			fillBuffer();
+		if (numbits < num) { fillBuffer(); }
 		temp = buffer & ((1 << num) - 1);
 		buffer = buffer >> num;
 		numbits -= num;
@@ -71,6 +70,11 @@ public:
 	 * Read 1 byte from buffer
 	 */
 	unsigned char read() { return receive(8); }
+	/**
+	 * Read Integer from file
+	 * @return integer value
+	 */
+	int readInt() { int output = 0; for (int ii = 0; ii < 4; ii++) { output = (output << 8) | read(); } return output; }
 	/**
 	 * Return byte to buffer
 	 * @param[in] 'input' is value to return to buffer
@@ -106,24 +110,42 @@ public:
 		if (fout.is_open() == false)
 			std::cout << "Can't open file: " << outFile << std::endl;
 	};
-	void write(unsigned char output) { fout << output; }
-	void write(const char* output) { fout << output; }
-	void write(Data<unsigned char>* data)
+	//void write(unsigned char output) { fout << output; }
+	//void write(const char* output) { fout << output; }
+	template<typename Type> void write(Type data) { fout << data; }
+	template<typename Type>
+	void writeData(Data<Type>* data)
 	{
 		for (int zz = 0; zz <= data->Size(); zz++)
-			write(data->read(zz));
+			fout << data->read(zz);
 	}
-	void writeInt(const int output)
+	void writeInt(int output)
 	{
 		Data<unsigned char> dat;
-		int temp = output;
 		do
 		{
-			dat.push(unsigned char((temp % 10) + 0x30));
-			temp = temp / 10;
-		} while (temp);
+			dat.push(unsigned char((output % 10) + 0x30));
+			output = output / 10;
+		} while (output);
 		for (int zz = 0; zz <= dat.Size();)
 			fout << dat.pop();
+	}
+	void writeByte(int output)
+	{
+		Data<unsigned char> dat;
+		do
+		{
+			dat.push(unsigned char(output % 256));
+			output = output / 256;
+		} while (output);
+		while(dat.Size() < 3)
+		{
+			dat.push('\0');
+		}
+		for (int zz = 0; zz <= dat.Size();)
+		{
+			fout << dat.pop();
+		}
 	}
 };
 #endif

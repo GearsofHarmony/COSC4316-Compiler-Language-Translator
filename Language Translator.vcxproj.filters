@@ -16,6 +16,9 @@
     <Filter Include="IO Files">
       <UniqueIdentifier>{1fd2094e-51b8-4242-80b4-fbf6fe74476d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AssemblyFiles">
+      <UniqueIdentifier>{d13b0dcb-31a7-428b-b26a-1f72697dd525}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -35,7 +38,7 @@
     <Text Include="TokenTable.txt">
       <Filter>IO Files</Filter>
     </Text>
-    <Text Include="Grammer.txt">
+    <Text Include="Grammar.txt">
       <Filter>IO Files</Filter>
     </Text>
     <Text Include="Test2Q3.txt">
@@ -44,7 +47,13 @@
     <Text Include="Test2Q5.txt">
       <Filter>IO Files</Filter>
     </Text>
-    <Text Include="TestGrammer.txt">
+    <Text Include="TestGrammar.txt">
+      <Filter>IO Files</Filter>
+    </Text>
+    <Text Include="Quads.txt">
+      <Filter>IO Files</Filter>
+    </Text>
+    <Text Include="DecisionTablesList.txt">
       <Filter>IO Files</Filter>
     </Text>
   </ItemGroup>
@@ -73,5 +82,16 @@
     <ClInclude Include="PrecedenceGenerator.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="SyntaxPass.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DecisionTables.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Java0.asm">
+      <Filter>AssemblyFiles</Filter>
+    </None>
   </ItemGroup>
 </Project>

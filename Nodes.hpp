@@ -45,7 +45,7 @@ struct Nodeptr
  * which can be expanded as an array of circular linked lists.
  * 
  * @tparam NodeDat is the data type to be stored in Nodeptr struct
- * @param size is the list size where if 0 the list is empty.
+ * @param size is the list size where if 0 then the list is empty.
  * @param head is a pointer to the beginning of the list.
  */
 template<typename NodeDat>
