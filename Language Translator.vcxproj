@@ -53,8 +53,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="Shared">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -154,6 +153,7 @@
     <Text Include="TokenTable.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Assembler.hpp" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Data.hpp" />
     <ClInclude Include="DecisionTables.hpp" />
@@ -166,9 +166,18 @@
     <ClInclude Include="SyntaxPass.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="IO1NasmLinux32.asm">
+      <FileType>Document</FileType>
+      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateDebugInformation>
+      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateDebugInformation>
+    </None>
+    <None Include="mainJava0.asm" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Java0.asm" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

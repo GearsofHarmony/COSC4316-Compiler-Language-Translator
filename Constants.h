@@ -2,11 +2,12 @@
 #define CONSTANTS_H
 #include "Data.hpp"
 
-const char* Java0File = "Java0.txt";
+const char* Java0File = "mainJava0.txt";
 const char* TokenFile = "TokenTable.txt";
 const char* SymbolFile = "SymbolTable.txt";
 const char* GrammarFile = "Grammar.txt";
 const char* QuadFile = "Quads.txt";
+const char* ASMFile = "mainJava0.asm";
 
 const int NumResWords = 12;
 /**

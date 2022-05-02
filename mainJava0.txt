@@ -10,6 +10,7 @@ CLASS LargestCommonDenominator{
 				 IF ODD B THEN Z = Z + A;
 				 A = 2 * A;  B = B / 2;
 		  }
+	PRINT A; PRINT B;
 	}
 
 	PROCEDURE Divide(){
@@ -35,10 +36,12 @@ CLASS LargestCommonDenominator{
 				 IF G < F THEN F = F - G;
 		  }
 		  Z = F;
+	PRINT Z; PRINT F; PRINT G;
 	}
 
 	/*	Main Program.	*/
 	X = M;  Y = N;  CALL Multiply();
-	X = 25;  Y = 3;  CALL Divide();
-	X = 84;  Y = 36;  CALL GCD();
+	/*X = 25;  Y = 3;*/GET X;  GET Y;  CALL Divide();
+	PRINT W;  PRINT Q; PRINT R;
+	/*X = 84;  Y = 36;*/GET X;  GET Y;  CALL GCD();
 }

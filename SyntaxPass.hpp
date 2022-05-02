@@ -7,7 +7,7 @@
 #include "Grammar.hpp"
 #include "PrecedenceGenerator.hpp"
 
-namespace SyntaxDBG { const bool DBG = 1; };
+namespace SyntaxDBG { const bool DBG = 0; };
 struct TableID
 {
 	int index = 0;
@@ -22,7 +22,6 @@ struct TableID
 struct ObjID
 {
 	TableID name;
-	//Data<unsigned char> name;
 	Grammar::ID id;
 	ObjID() {}
 	explicit ObjID(TableID inName, Grammar::ID inID)
@@ -85,17 +84,18 @@ Grammar::ID getID(int input, Data<unsigned char>* data)
 	return temp;
 }
 
+struct Entry
+{
+	Data<unsigned char> name;
+	Grammar::ID type;
+	Data<unsigned char> value;
+	bool isDS;
+	int memLoc;
+};
+
 class SymbolTableReader
 {
 private:
-	struct Entry
-	{
-		Data<unsigned char> name;
-		Grammar::ID type;
-		Data<unsigned char> value;
-		bool isDS;
-		int memLoc;
-	};
 	DecisionTable decTable;
 	int scanSymTable(Scanner& scan, Entry& data)
 	{
@@ -172,6 +172,7 @@ public:
 					if (inVal->read(ii) == '$' && ii > data.name.Size())
 					{
 						inVal = &data.name;
+						input = IDeof;
 						switch (data.type.type)
 						{
 						case 23: return TableID(tableIndex, 1);
@@ -192,6 +193,7 @@ public:
 					if (inVal->read(ii) == '$' && ii > data.value.Size())
 					{
 						inVal = &data.value;
+						input = IDeof;
 						switch (data.type.type)
 						{
 						case 23: return TableID(tableIndex, 1);
@@ -221,9 +223,29 @@ public:
 			if (seek.index == tableIndex)
 			{
 				*inVal = data.name;
+				input = IDeof;
 			}
 			tableIndex++;
 		} while (input != IDeof);
+	}
+	int getIDENT(Data<unsigned char>* name, Data<unsigned char>* value, TableID seek)
+	{
+		Scanner scan(SymbolFile, "SSCN$");
+		int input;
+		int tableIndex = 0;
+		do
+		{
+			Entry data;
+			input = scanSymTable(scan, data);
+			if (seek.index == tableIndex)
+			{
+				*name = data.name;
+				*value = data.value;
+				return data.type.type;
+			}
+			tableIndex++;
+		} while (input != IDeof);
+		return input;
 	}
 	void fillStack(Stack<ObjID>& stack)
 	{
@@ -279,12 +301,21 @@ struct Quad
 		Data<unsigned char> temp;
 		switch (data.op.id.type)
 		{
+		case IDClass:
 		case IDProc:
-			cout << data.op.id << ", ";
-			symbolTable.check(&temp, data.opa1.name);
-			for (int ii = 0; ii <= temp.Size(); ii++)
+			cout << data.op.id << ',';
+			if (Grammar::ID(1, IDWut).cmp(data.opa1.id))
 			{
-				cout << temp.read(ii);
+				cout << data.opa1.id;
+			}
+			else
+			{
+				cout << ' ';
+				symbolTable.check(&temp, data.opa1.name);
+				for (int ii = 0; ii <= temp.Size(); ii++)
+				{
+					cout << temp.read(ii);
+				}
 			}
 			cout << ',' << data.opa2.id << ',' << data.opa3.id;
 			break;
@@ -295,15 +326,22 @@ struct Quad
 			{
 				cout << temp.read(ii);
 			}
-			cout << ',' << data.opa2.id << data.opa2.name.index << ',' << data.opa3.id;
+			cout << ',' << data.opa2.id << ',' << data.opa3.id;
 			break;
 		case IDWhile:
 		case IDDo:
 		case IDIf:
 		case IDThen:
-			cout << data.op.id << ','
-				<< data.opa1.id << data.opa1.name.index << ','
-				<< data.opa2.id << ',' << data.opa3.id;
+			cout << data.op.id << ',';
+			if (Grammar::ID(1, IDWut).cmp(data.opa1.id))
+			{
+				cout << data.opa1.id;
+			}
+			else
+			{
+				cout << data.opa1.id << data.opa1.name.index;
+			}
+			cout << ',' << data.opa2.id << ',' << data.opa3.id;
 			break;
 		case IDOdd:
 			cout << data.op.id << ", ";
@@ -385,12 +423,12 @@ private:
 	FileOut fout;
 	DecisionTable decTable;
 	SymbolTableReader* symbolTable = 0;
-	Data<Quad> idStack, qStack;
+	Data<Quad> idStack, qStack, stmtStack;
 	Data<ObjID> BE;
+	bool terminated = false;
 	int TVar = 0;
 	int be = 1;
 	int Loop = 1;
-	int call = 1;
 	bool checkHandle(Stack<ObjID>& stack, PrecTableGen& precTable, Node<Grammar::IDNode>* List)
 	{
 		MatN tempMat;
@@ -429,7 +467,7 @@ private:
 				{
 					bool test = true;
 					check.id = Node<Grammar::IDNode>::getData(&List[index], xx).data;
-					if (decTable.index2D(check.id.isTerm, check.id.type) == 53)
+					if (check.id.cmp(Grammar::ID(0, IDEval)))
 					{
 						for (int ii = 0; ii <= temp.Size(); ii++)
 						{
@@ -469,6 +507,26 @@ private:
 									{
 										switch (data.read(ii).id.type)
 										{
+										case IDClass:
+											while (qStack.Size() >= 0 && !qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDProc)))
+											{
+												stmtStack.push(qStack.pop());
+											}
+											while (qStack.Size() >= 0)
+											{
+												idStack.push(qStack.pop());
+											}
+											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
+											while (stmtStack.Size() >= 0)
+											{
+												qStack.push(stmtStack.pop());
+											}
+											qStack.push(Quad(data.read(ii), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
+											while (idStack.Size() >= 0)
+											{
+												qStack.push(idStack.pop());
+											}
+											break;
 										case IDProc:
 											while (qStack.Size() >= 0 && !qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDProc)))
 											{
@@ -479,59 +537,26 @@ private:
 											{
 												qStack.push(idStack.pop());
 											}
-											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
+											qStack.push(Quad(data.read(ii), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
 											break;
 										case IDCall:
-											symbolTable->check(&temp, data.read(ii - 1).name);
-											while (qStack.Size() >= 0 && !(qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDProc)) && (qStack.read(qStack.Size()).opa1.name.index == data.read(ii - 1).name.index)))
-											{
-												idStack.push(qStack.pop());
-											}
-											qStack.pop();
-											qStack.push(Quad(data.read(ii - 1), ObjID(TableID(call, 0), data.read(ii).id), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
-											while (idStack.Size() >= 0)
-											{
-												qStack.push(idStack.pop());
-											}
-											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(call++, 0), data.read(ii).id), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
+											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
 											break;
 										case IDWhile:
-											while (!qStack.read(qStack.Size()).op.id.cmp(BE.read(BE.Size()).id))
-											{
-												if (qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDIf)) || qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDWhile)))
-												{
-													idStack.push(qStack.pop());
-												}
-												idStack.push(qStack.pop());
-											}
-											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
-											if(data.read(ii - 4).id.cmp(Grammar::ID(1, IDsemi)))
-											{
-												while (!qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDassign)))
-												{
-													qStack.push(idStack.pop());
-												}
-												qStack.push(Quad(data.read(ii - 2), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
-												while (idStack.Size() >= 0)
-												{
-													qStack.push(idStack.pop());
-												}
-											}
-											else
-											{
-												while (idStack.Size() >= 0)
-												{
-													qStack.push(idStack.pop());
-												}
-												qStack.push(Quad(data.read(ii - 2), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
-											}
-											BE.pop(); break;
 										case IDIf:
-											while (!qStack.read(qStack.Size()).op.id.cmp(BE.read(BE.Size()).id))
+											while(qStack.Size() >= 0)
 											{
-												if (qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDIf)) || qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDWhile)))
+												if (qStack.read(qStack.Size()).op.id.cmp(BE.read(BE.Size()).id))
 												{
-													idStack.push(qStack.pop());
+													if (qStack.read(qStack.Size() - 1).op.id.cmp(Grammar::ID(1, IDIf)) || qStack.read(qStack.Size() - 1).op.id.cmp(Grammar::ID(1, IDWhile)))
+													{
+														idStack.push(qStack.pop());
+													}
+													else
+													{
+														idStack.push(qStack.pop());
+														break;
+													}
 												}
 												idStack.push(qStack.pop());
 											}
@@ -611,6 +636,7 @@ private:
 							}
 							stack.push(check, 1);
 							if (SyntaxDBG::DBG) { std::cout << check << '\n'; };
+							if (SyntaxDBG::DBG) { for (int ii = 0; ii <= qStack.Size(); ii++) { std::cout << qStack.read(ii); } std::cout << '\n'; }
 							return true;
 						}
 					}
@@ -690,6 +716,7 @@ private:
 				else
 				{
 					std::cout << "Error!\n";
+					terminated = true;
 				}
 				break;
 			case 1:
@@ -702,6 +729,7 @@ private:
 				if (!checkHandle(stack, precTable, List))
 				{
 					std::cout << "Error!\n";
+					terminated = true;
 				}
 				break;
 			case 2: stack.push(YeildTo); stack.push(next); break;
@@ -709,6 +737,7 @@ private:
 				if (!checkHandle(stack, precTable, List))
 				{
 					std::cout << "Error!\n";
+					terminated = true;
 				}
 				else
 				{
@@ -920,13 +949,13 @@ public:
 				default: finished = true; break;
 				};
 			}
-		} while (!stack.isempty());
+		} while (!stack.isempty() && !terminated);
 		if (SyntaxDBG::DBG) stack.print();
 		fout.writeData(&qStack);
 	}
 };
 
-void syntaxPass()
+void Pass2()
 {
 	PrecTableGen precTable("tPRC$");
 	SyntaxPass syntax(QuadFile, "tPRC$");

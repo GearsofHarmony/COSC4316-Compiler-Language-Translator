@@ -4,6 +4,7 @@
 #include <time.h>
 #include "Pass1.hpp"
 #include "SyntaxPass.hpp"
+#include "Assembler.hpp"
 
 void TABLE()
 {
@@ -457,8 +458,10 @@ int main()
 	start = clock();
 
 	//TABLE();
-	pass1();
-	syntaxPass();
+	Pass1();
+	Pass2();
+	AssemblyGenerator pass3;
+	pass3.generateASM();
 
 	std::cout << ((clock() - (double)start) / CLOCKS_PER_SEC);
 	if (memDBG)

@@ -16,8 +16,8 @@
     <Filter Include="IO Files">
       <UniqueIdentifier>{1fd2094e-51b8-4242-80b4-fbf6fe74476d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="AssemblyFiles">
-      <UniqueIdentifier>{d13b0dcb-31a7-428b-b26a-1f72697dd525}</UniqueIdentifier>
+    <Filter Include="ASM Files">
+      <UniqueIdentifier>{2d7c5075-4e4d-4dba-b13e-8a2160ce0b66}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -88,10 +88,19 @@
     <ClInclude Include="DecisionTables.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Assembler.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <None Include="IO1NasmLinux32.asm">
+      <Filter>ASM Files</Filter>
+    </None>
     <None Include="Java0.asm">
-      <Filter>AssemblyFiles</Filter>
+      <Filter>ASM Files</Filter>
+    </None>
+    <None Include="mainJava0.asm">
+      <Filter>ASM Files</Filter>
     </None>
   </ItemGroup>
 </Project>

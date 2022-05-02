@@ -153,6 +153,7 @@ private:
 	int type = 0,
 		DS = 0, CS = 0,
 		numTempVar = 0, tempVar = 0;
+	Data<int> NumLit;
 	FileOut fout;
 	DecisionTable decTable;
 public:
@@ -190,6 +191,19 @@ public:
 		case 2:
 			if (type != IDConst)
 			{
+				input = data->read(0) - 0x30;
+				for (int ii = 1; ii <= data->Size(); ii++)
+				{
+					input = (input * 10) + (data->read(ii) - 0x30);
+				}
+				for (int ii = 0; ii <= NumLit.Size(); ii++)
+				{
+					if (NumLit.read(ii) == input)
+					{
+						return;
+					}
+				}
+				NumLit.push(input);
 				fout.write("lit"); fout.writeData(data); fout.write(" $integer ");
 			}
 			fout.writeData(data); fout.write(" DS "); fout.writeInt(DS);
@@ -203,7 +217,7 @@ public:
 		case 5:
 			for (int ii = 1; ii <= numTempVar; ii++)
 			{
-				fout.write('T'); fout.writeInt(ii); fout.write(" $TempVar ");
+				fout.write('T'); fout.writeInt(ii); fout.write(" $Varident ");
 				fout.write('?'); fout.write(" DS "); fout.writeInt(DS);
 				fout.write('\n'); DS += 2;
 			}
@@ -215,7 +229,7 @@ public:
 /**
  * First Pass of translator
  */
-void pass1()
+void Pass1()
 {
 	Data<unsigned char> data;
 	Scanner scan(Java0File, "PSCN$");
