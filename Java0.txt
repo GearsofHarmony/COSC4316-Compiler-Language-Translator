@@ -1,9 +1,73 @@
 CLASS Pgm1 {
-CONST M = 13, N = 56;
-VAR X, Y, Z;
+	VAR input;
+	PROCEDURE procC1(){
+		VAR ans, a, Bob, Jane, b, c;
 
-/*Y = 97;*/
-GET Y;
-X = M * N + 18 - Y;
-PRINT X;
+		GET a; GET Bob; GET Jane; GET b; GET c;
+		ans = a * ((Bob + Jane - 10) / 2 * 4) / (b + c);
+		PRINT ans;
+	}
+
+	PROCEDURE GreatestNumber(){
+		VAR numA, numB;
+		GET numA; GET numB;
+		IF numA > numB THEN PRINT numA;
+		IF numA < numB THEN PRINT numB;
+	}
+
+	PROCEDURE GreatestNumber2(){
+		VAR num1, num2, num3;
+		GET num1; GET num2; GET num3;
+		IF num1 > num2 THEN {
+			IF num1 > num3 THEN {
+				PRINT num1;
+			}
+			IF num1 < num3 THEN {
+				PRINT num3;
+			}
+		}
+		IF num1 < num2 THEN {
+			IF num2 > num3 THEN {
+				PRINT num2;
+			}
+			IF num2 < num3 THEN {
+				PRINT num3;
+			}
+		}
+	}
+
+	PROCEDURE factorial(){
+		VAR M, N;
+		
+		GET M; N = 1;
+		WHILE M > 0 DO {
+			N = N * (M);
+			M = M - 1;
+		}
+		PRINT N;
+	}
+
+	PROCEDURE recursfactorial(){
+		VAR  RM, RN;
+		IF RM > 0 THEN {
+			RN = RN * (RM);
+			RM = RM - 1;
+			CALL recursfactorial();
+		}
+	}
+	CALL procC1(); 
+	CALL GreatestNumber(); 
+	CALL GreatestNumber2(); 
+	
+	M = 1;
+	WHILE M > 0 DO {
+		CALL factorial();
+	}
+	RM = 1;
+	WHILE RM > 0 DO {
+		RN = 1;
+		CALL recursfactorial();
+		PRINT RN;
+		GET RM;
+	}
 }

@@ -452,12 +452,13 @@ void TABLE()
 int main()
 {
 	bool memDBG = 1;
+	bool buildTable = 0;
 	if (memDBG)
 		_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 	clock_t start;
 	start = clock();
 
-	//TABLE();
+	if (buildTable) { TABLE(); }
 	Pass1();
 	Pass2();
 	AssemblyGenerator pass3;

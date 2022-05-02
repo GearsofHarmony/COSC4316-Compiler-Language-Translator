@@ -441,6 +441,7 @@ private:
 		stack.push(data.pop());
 		if (SyntaxDBG::DBG)
 		{
+			std::cout << "Check Handle!\n";
 			for (int ii = 0; ii <= data.Size(); ii++)
 			{
 				std::cout << data.read(ii) << ' ';
@@ -526,6 +527,7 @@ private:
 											{
 												qStack.push(idStack.pop());
 											}
+											if (SyntaxDBG::DBG) { for (int ii = 0; ii <= qStack.Size(); ii++) { std::cout << qStack.read(ii); } std::cout << '\n'; }
 											break;
 										case IDProc:
 											while (qStack.Size() >= 0 && !qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDProc)))
@@ -538,6 +540,7 @@ private:
 												qStack.push(idStack.pop());
 											}
 											qStack.push(Quad(data.read(ii), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
+											if (SyntaxDBG::DBG) { for (int ii = 0; ii <= qStack.Size(); ii++) { std::cout << qStack.read(ii); } std::cout << '\n'; }
 											break;
 										case IDCall:
 											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
@@ -563,7 +566,7 @@ private:
 											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
 											if (data.read(ii - 4).id.cmp(Grammar::ID(1, IDsemi)))
 											{
-												while (!qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDassign)))
+												while (!qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDassign)) && !qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDGet)) && !qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDPrint)) && !qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDCall)))
 												{
 													qStack.push(idStack.pop());
 												}
@@ -626,6 +629,9 @@ private:
 											BE.push(data.read(ii));
 											check.name.index = be++;
 											data.empty(); break;
+										case IDLP:
+											check.name = data.read(ii - 1).name;
+											break;
 										};
 									}
 								}
@@ -701,7 +707,7 @@ private:
 						{
 							if (precTable.testTable(decTable.index2D(EMPTY.id.isTerm, EMPTY.id.type), List).mat[decTable.index2D(temp.id.isTerm = row, temp.id.type = col)][decTable.index2D(EMPTY.id.isTerm, EMPTY.id.type)])
 							{
-								if (matPG.mat[decTable.index2D(temp.id.isTerm, temp.id.type)][decTable.index2D(next.id.isTerm, next.id.type)])
+								if (matPG.mat[decTable.index2D(current.id.isTerm, current.id.type)][decTable.index2D(temp.id.isTerm, temp.id.type)])
 								{
 									data.push(next);
 									data.push(temp);
@@ -717,6 +723,8 @@ private:
 				{
 					std::cout << "Error!\n";
 					terminated = true;
+					if (SyntaxDBG::DBG) stack.print();
+					return;
 				}
 				break;
 			case 1:
@@ -730,22 +738,15 @@ private:
 				{
 					std::cout << "Error!\n";
 					terminated = true;
+					if (SyntaxDBG::DBG) stack.print();
+					return;
 				}
 				break;
 			case 2: stack.push(YeildTo); stack.push(next); break;
 			case 3:
-				if (!checkHandle(stack, precTable, List))
-				{
-					std::cout << "Error!\n";
-					terminated = true;
-				}
-				else
-				{
-					data.push(next);
-					next = stack.pop(1);
-					stack.push(YeildTo);
-					stack.push(next);
-				}
+				stack.push(YeildTo);
+				stack.push(next);
+				if (SyntaxDBG::DBG) stack.print();
 				break;
 			case 4: stack.push(next); break;
 			case 5:
@@ -847,6 +848,10 @@ public:
 					{
 						if (next.id.cmp(EMPTY.id))
 						{
+							if (stack.getSize() == 1)
+							{
+								terminated = true;
+							}
 							break;
 						}
 						stack.push(next);
@@ -919,31 +924,22 @@ public:
 						data.push(stack.pop());
 					} while (!data.read(data.Size()).id.cmp(current.id));
 					stack.push(data.pop());
-					for (int ii = 0; ii <= data.Size(); ii++)
+					stack.push(YeildTo);
+					while (data.Size() >= 0)
 					{
-						stack.push(data.read(ii), 1);
+						stack.push(data.pop());
 					}
 					data.empty();
-					stack.push(YeildTo, 1); 
-					if (!checkHandle(stack, precTable, List))
-					{
-						correctHandle(stack, precTable, List);
-					}
+					if (SyntaxDBG::DBG) stack.print();
 					break;
 				case 4: finished = true; stack.push(next); break;
 				case 5: finished = true;
-					if (!current.id.isTerm)
-					{
-						stack.push(next, 1);
-					}
-					else if (current.id.isTerm && next.id.isTerm)
-					{
-						stack.push(next);
-					}
+					stack.push(next);
 					if (!checkHandle(stack, precTable, List))
 					{
 						correctHandle(stack, precTable, List);
 					}
+					stack.push(stack.pop(1));
 					break;
 				case 6: nextState = 2; break;
 				default: finished = true; break;

@@ -22,6 +22,8 @@ section	.data
 	lit0	dw	0
 	lit2	dw	2
 	lit1	dw	1
+	lit25	dw	25
+	lit3	dw	3
 section	.bss
 	TempChar	RESB	1
 	testchar	RESB	1
@@ -56,27 +58,27 @@ _start:
 	mov	ax,[ReadInt]
 	mov	[Y],ax
 	CALL	Divide
-	mov	ax,[W]
+	mov	eax,X
+	mov	bx,[lit25]
+	mov	[eax],bx
+	mov	eax,Y
+	mov	bx,[lit3]
+	mov	[eax],bx
+	mov	ax,[X]
 	CALL	Print
 	mov	eax,sys_write
 	mov	ebx,stdout
 	mov	ecx,Result
 	mov	edx,ResultEnd
 	int	0x80
-	mov	ax,[Q]
+	mov	ax,[Y]
 	CALL	Print
 	mov	eax,sys_write
 	mov	ebx,stdout
 	mov	ecx,Result
 	mov	edx,ResultEnd
 	int	0x80
-	mov	ax,[R]
-	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
+	CALL	Divide
 	CALL	GetAnInteger
 	mov	ax,[ReadInt]
 	mov	[X],ax
@@ -126,8 +128,6 @@ be2:NOP
 	mov	eax,B
 	mov	bx,[T1]
 	mov	[eax],bx
-	jmp	wbe1
-be1:NOP
 	mov	ax,[A]
 	CALL	Print
 	mov	eax,sys_write
@@ -142,6 +142,8 @@ be1:NOP
 	mov	ecx,Result
 	mov	edx,ResultEnd
 	int	0x80
+	jmp	wbe1
+be1:NOP
 	ret
 Divide:
 	mov	eax,R
@@ -200,6 +202,27 @@ wbe4:NOP
 	mov	bx,[T1]
 	mov	[eax],bx
 be5:NOP
+	mov	ax,[W]
+	CALL	Print
+	mov	eax,sys_write
+	mov	ebx,stdout
+	mov	ecx,Result
+	mov	edx,ResultEnd
+	int	0x80
+	mov	ax,[Q]
+	CALL	Print
+	mov	eax,sys_write
+	mov	ebx,stdout
+	mov	ecx,Result
+	mov	edx,ResultEnd
+	int	0x80
+	mov	ax,[R]
+	CALL	Print
+	mov	eax,sys_write
+	mov	ebx,stdout
+	mov	ecx,Result
+	mov	edx,ResultEnd
+	int	0x80
 	jmp	wbe4
 be4:NOP
 	ret
