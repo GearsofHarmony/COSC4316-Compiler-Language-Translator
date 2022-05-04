@@ -9,11 +9,6 @@
 *.user
 *.userosscache
 *.sln.docstates
-Test2Q3.txt
-Test2Q5.txt
-TestSampleCode.txt
-IO1NasmLinux32.asm
-TestGrammar.txt
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
