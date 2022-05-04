@@ -112,13 +112,32 @@ public:
 	};
 	//void write(unsigned char output) { fout << output; }
 	//void write(const char* output) { fout << output; }
+	/**
+	 * Write to file
+	 * @tparam 'Type' is the data type used
+	 * @param[in] 'data' is the data to write to file
+	 * @note This function should only be used for primitive data types
+	 *		and some structs with overridden write operations
+	 */
 	template<typename Type> void write(Type data) { fout << data; }
+	/**
+	 * Write to file
+	 * @tparam 'Type' is the data type used
+	 * @param[in] 'data' is the data to write to file
+	 * @note This function should only be used for Data class data types
+	 *		and some structs with overridden write operations
+	 */
 	template<typename Type>
 	void writeData(Data<Type>* data)
 	{
 		for (int zz = 0; zz <= data->Size(); zz++)
 			fout << data->read(zz);
 	}
+	/**
+	 * Write integer to file as unsigned character
+	 * @param[in] 'data' is the data to write to file
+	 * @note This function should be used to write integers as strings
+	 */
 	void writeInt(int output)
 	{
 		Data<unsigned char> dat;
@@ -130,6 +149,11 @@ public:
 		for (int zz = 0; zz <= dat.Size();)
 			fout << dat.pop();
 	}
+	/**
+	 * Write integer to file as unsigned character for binary formatting
+	 * @param[in] 'data' is the data to write to file
+	 * @note This function should be used to write integers as binary representation
+	 */
 	void writeByte(int output)
 	{
 		Data<unsigned char> dat;

@@ -6,6 +6,7 @@
 
 namespace PrecGenDBG { const bool DBG = 0; };
 
+/// Precedence table for syntax
 class MatN
 {
 public:
@@ -80,6 +81,7 @@ public:
 		return MatN(temp);
 	}
 };
+/// Find transitive closure for matrix
 MatN warshall(const MatN& table)
 {
 	MatN temp = table;
@@ -102,6 +104,11 @@ MatN matStar(const MatN& table)
 {
 	return (MatN::Identity() | warshall(table));
 }
+/**
+ * Display contents of matrix in terminal
+ * @param[in] 'Result' contents of matrix to display
+ * @param[in] 'msg' custom message to display before matrix. Default => "Table\n"
+ */
 void printMat(const MatN& Result, const char* msg = "Table\n")
 {
 	std::cout << msg;
@@ -127,6 +134,12 @@ void printMat(const MatN& Result, const char* msg = "Table\n")
 	}
 	std::cout << std::endl;
 }
+/**
+ * Display contents of matrix in terminal
+ * @param[in] 'Result' contents of matrix to display
+ * @param[in] 'rows' pointer to list of rows & columns to only display
+ * @param[in] 'size' size of 'rows'
+ */
 void printMat(const MatN& Result, const int* rows, const int size)
 {
 	for (int row = 0; row < size; row++)
@@ -158,6 +171,11 @@ public:
 	{
 		decTable.buildTable(table);
 	}
+	/**
+	 * A FIRST B if and only if there is a rule A ::= B***
+	 * @param[in] 'List' Grammar list to construct matrix
+	 * @returns matrix
+	 */
 	MatN generateFirst(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
@@ -192,6 +210,11 @@ public:
 		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
 	}
+	/**
+	 * A WITHIN B if and only if there is a rule U ::= ***AB***
+	 * @param[in] 'List' Grammar list to construct matrix
+	 * @returns matrix
+	 */
 	MatN generateWithin(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
@@ -227,6 +250,11 @@ public:
 		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
 	}
+	/**
+	 * A LAST B if and only if there is a rule A ::= ***B
+	 * @param[in] 'List' Grammar list to construct matrix
+	 * @returns matrix
+	 */
 	MatN generateLast(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
@@ -261,6 +289,12 @@ public:
 		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
 	}
+	/**
+	 * Let S be a terminal and U, V be non-Terminals
+	 * U FIRSTTERM S if and only if there is a rule U ::= S*** OR U ::= VS***
+	 * @param[in] 'List' Grammar list to construct matrix
+	 * @returns matrix
+	 */
 	MatN generateFirstTerm(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
@@ -305,6 +339,12 @@ public:
 		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
 	}
+	/**
+	 * Let R, S be a terminal and U, V be non-Terminals
+	 * R WITHINTERM S if and only if there is a rule U ::= ***RS*** OR U ::= ***RVS***
+	 * @param[in] 'List' Grammar list to construct matrix
+	 * @returns matrix
+	 */
 	MatN generateWithinTerm(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();
@@ -340,6 +380,12 @@ public:
 		if (PrecGenDBG::DBG) std::cout << '\n';
 		return table;
 	}
+	/**
+	 * Let S be a terminal and U, V be non-Terminals
+	 * U LASTTERM S if and only if there is a rule U ::= ***S OR U ::= ***SV
+	 * @param[in] 'List' Grammar list to construct matrix
+	 * @returns matrix
+	 */
 	MatN generateLastTerm(Node<Grammar::IDNode>* List)
 	{
 		MatN table = MatN::ZeroMat();

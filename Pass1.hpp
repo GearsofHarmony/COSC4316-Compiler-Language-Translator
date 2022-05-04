@@ -7,6 +7,8 @@
 
 /**
  * Pass 1 for compiler
+ * @param 'fin' is the FileIO to read
+ * @param 'decTable' is the decision table
  * @note this parse can be tailored for other passes
  */
 class Scanner
@@ -16,16 +18,34 @@ private:
 	DecisionTable decTable;
 public:
 	Scanner() {}
+	/**
+	 * Constructor for Scanner
+	 * @param[in] 'inFile' is the file to access
+	 * @param[in] 'table' is the header name to access table
+	 * @warning 'table' must have '$' character at end of string to function properly!
+	 */
 	Scanner(const char* inFile, const char* table)
 	{
 		fin.openFile(inFile);
 		decTable.buildTable(table);
 	}
+	/**
+	 * Initialize Scanner if created with default constructor or for reuse
+	 * @param[in] 'inFile' is the file to access
+	 * @param[in] 'table' is the header name to access table
+	 * @warning 'table' must have '$' character at end of string to function properly!
+	 */
 	void initScanner(const char* inFile, const char* table)
 	{
 		fin.openFile(inFile);
 		decTable.buildTable(table);
 	}
+	/**
+	 * Parse function to identify unique strings and characters in file
+	 * @param[out] 'data' pointer to storage that stores unique string or character
+	 * @returns integer of ID for string or character
+	 * @warning 'data' contents are emptied each time this function is called
+	 */
 	int parse(Data<unsigned char>* data)
 	{
 		unsigned char input;
@@ -89,11 +109,22 @@ private:
 	FileOut fout;
 	DecisionTable decTable;
 public:
+	/**
+	 * Constructor for Scanner
+	 * @param[in] 'inFile' is the file to access
+	 * @param[in] 'table' is the header name to access table
+	 * @warning 'table' must have '$' character at end of string to function properly!
+	 */
 	TokenTable(const char* outFile, const char* table)
 	{
 		fout.openFile(outFile);
 		decTable.buildTable(table);
 	};
+	/**
+	 * Write string to file for Token Table
+	 * @param[in] 'input' string ID generated from scanner
+	 * @param[in] 'data' pointer to string for writing to file
+	 */
 	void entry(int input, Data<unsigned char>* data)
 	{
 		int nextState = decTable.index1D(input);
@@ -143,6 +174,7 @@ public:
  * @param 'CS' Code Segment location
  * @param 'numTempVar' number of temporary variables
  * @param 'tempVar' counter for possible number of temporary variables
+ * @param 'NumLit' Storage for unique numeric literals found
  * @param 'fout' output file
  * @param 'decTable' decision table for parse
  */
@@ -157,11 +189,22 @@ private:
 	FileOut fout;
 	DecisionTable decTable;
 public:
+	/**
+	 * Constructor for Scanner
+	 * @param[in] 'inFile' is the file to access
+	 * @param[in] 'table' is the header name to access table
+	 * @warning 'table' must have '$' character at end of string to function properly!
+	 */
 	SymbolTable(const char* outFile, const char* table)
 	{
 		fout.openFile(outFile);
 		decTable.buildTable(table);
 	};
+	/**
+	 * Write string to file for Symbol Table
+	 * @param[in] 'input' string ID generated from scanner
+	 * @param[in] 'data' pointer to string for writing to file
+	 */
 	void entry(int input, Data<unsigned char>* data)
 	{
 		int nextState = decTable.index1D(input);
@@ -226,9 +269,7 @@ public:
 		}
 	}
 };
-/**
- * First Pass of translator
- */
+/// First Pass of translator
 void Pass1()
 {
 	Data<unsigned char> data;

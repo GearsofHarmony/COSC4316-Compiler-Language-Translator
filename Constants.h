@@ -157,7 +157,11 @@ const unsigned int ASCII[16][8] =
 	{	ASCII::Other,	ASCII::Other,	ASCII::Other,	ASCII::GRop,	ASCII::Letter,	ASCII::Other,	ASCII::Letter,	ASCII::Other	},
 	{	ASCII::Other,	ASCII::Other,	ASCII::divop,	ASCII::wut,		ASCII::Letter,	ASCII::Other,	ASCII::Letter,	ASCII::Other	}
 };
-
+/**
+ * Check if reserved word
+ * @param[in] 'data' (Data class of unsigned characters) is the data to check 
+ * @returns if a reserved word return index as ID otherwise return IDName as variable ID
+ */
 int checkReservedWord(Data<unsigned char>* data)
 {
 	for (int ii = 0; ii < NumResWords; ii++)
@@ -176,7 +180,11 @@ int checkReservedWord(Data<unsigned char>* data)
 	}
 	return IDName;
 }
-
+/**
+ * Check if Non-terminal
+ * @param[in] 'data' (Data class of unsigned characters) is the data to check
+ * @returns if a Non-terminal return index as ID otherwise return NumNonTerm as Terminal ID
+ */
 int checkNonTerm(Data<unsigned char>* data)
 {
 	for (int ii = 0; ii < NumNonTerm; ii++)

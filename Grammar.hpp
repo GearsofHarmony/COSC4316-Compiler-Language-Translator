@@ -10,6 +10,7 @@ namespace GrammarDBG { const bool DBG = 0; };
 
 namespace Grammar
 {
+	/// Struct for Grammar ID
 	struct ID
 	{
 		bool isTerm = 0;
@@ -88,6 +89,7 @@ namespace Grammar
 			return cout;
 		}
 	};
+	/// Struct for Node list
 	struct IDNode
 	{
 		ID data;
@@ -97,16 +99,32 @@ namespace Grammar
 			return cout << data.data;
 		}
 	};
+	/**
+	 * Identifies terminals and non-terminals in grammar file
+	 * @param 'decTable' decision table
+	 * @warning 'table' must have '$' character at end of string to function properly!
+	 */
 	class Identifier
 	{
 	private:
 		DecisionTable decTable;
 	public:
+		/**
+		 * Constructor for Identifier
+		 * @param[in] 'table' is the header name to access table
+		 * @warning 'table' must have '$' character at end of string to function properly!
+		 */
 		Identifier(const char* table)
 		{
 			//decTable.buildTable3D(table, nPage, nRow, nCol);
 			decTable.buildTable(table);
 		};
+		/**
+		 * Parse function to identify and label unique strings and characters to construct Grammar table
+		 * @param[in] 'scan' scanner used to identify strings
+		 * @param[out] 'stack' storage for Non-terminals and their produced values
+		 * @warning 'stack' must have two stacks initialized before use otherwise failure will occur
+		 */
 		void entry(Scanner* scan, Stack<Grammar::ID>* stack)
 		{
 			int input;
@@ -154,16 +172,31 @@ namespace Grammar
 			}
 		};
 	};
+	/**
+	 * Builds Grammar list for use later
+	 * @param 'decTable' decision table
+	 */
 	class GrammarListBuilder
 	{
 	private:
 		DecisionTable decTable;
 	public:
+		/**
+		 * Constructor
+		 * @param[in] 'table' is the header name to access table
+		 * @warning 'table' must have '$' character at end of string to function properly!
+		 */
 		GrammarListBuilder(const char* table) 
 		{
 			//decTable.buildTable3D(table, nPage, nRow, nCol);
 			decTable.buildTable(table);
 		};
+		/**
+		 * Build list from stack
+		 * @param[out] 'List' grammar list
+		 * @param[in] 'stack' information to build list
+		 * @warning must call Identifier to build contents in stack before construction of list
+		 */
 		void entry(Node<Grammar::IDNode>* List, Stack<Grammar::ID>* stack)
 		{
 			do
@@ -201,9 +234,7 @@ namespace Grammar
 		};
 	};
 };
-/**
- * Parse Grammar File for evaluation
- */
+/// Parse Grammar File for evaluation
 void GramParse(Node<Grammar::IDNode>* List)
 {
 	Stack<Grammar::ID> GIDStack(255, 2);

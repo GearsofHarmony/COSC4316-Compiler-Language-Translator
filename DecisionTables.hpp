@@ -17,8 +17,7 @@ private:
 	int page, row, col;
 	int* decTable;
 	/**
-	 * Initializes 'decTable' with a copy of input 'table'
-	 * @param[in] 'table' pointer to table for copying
+	 * Initializes 'decTable' from input file
 	 * @param[in] 'nCol' number of columns for 'table'
 	 * @param[in] 'nRow' number of rows for 'table'
 	 * @param[in] 'nPage' number of pages for 'table'
@@ -69,6 +68,11 @@ private:
 public:
 	DecisionTable() { page = row = col = 0; decTable = 0; };
 	~DecisionTable() { delete[] decTable; decTable = 0; }
+	/**
+	 * Builds decision table
+	 * @param[in] 'table' is the header name to access table
+	 * @warning 'table' must have '$' character at end of string to function properly!
+	 */
 	void buildTable(const char* table)
 	{
 		fin.openFile("DecisionTablesList.txt");
