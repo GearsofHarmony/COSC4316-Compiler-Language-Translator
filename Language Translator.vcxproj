@@ -143,7 +143,6 @@
   <ItemGroup>
     <Text Include="DecisionTablesList.txt" />
     <Text Include="Quads.txt" />
-    <Text Include="TestGrammar.txt" />
     <Text Include="Grammar.txt" />
     <Text Include="Java0.txt" />
     <Text Include="mainJava0.txt" />
@@ -166,13 +165,6 @@
     <ClInclude Include="SyntaxPass.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="IO1NasmLinux32.asm">
-      <FileType>Document</FileType>
-      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateDebugInformation>
-      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</GenerateDebugInformation>
-      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateDebugInformation>
-      <GenerateDebugInformation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</GenerateDebugInformation>
-    </None>
     <None Include="mainJava0.asm" />
   </ItemGroup>
   <ItemGroup>

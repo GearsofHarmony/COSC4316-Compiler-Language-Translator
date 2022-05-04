@@ -47,9 +47,6 @@
     <Text Include="Test2Q5.txt">
       <Filter>IO Files</Filter>
     </Text>
-    <Text Include="TestGrammar.txt">
-      <Filter>IO Files</Filter>
-    </Text>
     <Text Include="Quads.txt">
       <Filter>IO Files</Filter>
     </Text>
@@ -93,9 +90,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="IO1NasmLinux32.asm">
-      <Filter>ASM Files</Filter>
-    </None>
     <None Include="Java0.asm">
       <Filter>ASM Files</Filter>
     </None>
