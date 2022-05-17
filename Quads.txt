@@ -2,12 +2,8 @@
  CALL, procC1, ?, ?
  CALL, GreatestNumber, ?, ?
  CALL, GreatestNumber2, ?, ?
- =, M, lit1, ?
- WHILE, be11, ?, ?
- >, M, lit0, ?
  CALL, factorial, ?, ?
- DO, be11, ?, ?
- =, RM, lit1, ?
+ GET, RM ?, ?
  WHILE, be12, ?, ?
  >, RM, lit0, ?
  =, RN, lit1, ?
@@ -40,7 +36,7 @@
  PRINT, numA ?, ?
  THEN, be1, ?, ?
  IF, be2, ?, ?
- <, numA, numB, ?
+ <=, numA, numB, ?
  PRINT, numB ?, ?
  THEN, be2, ?, ?
  PROCEDURE, ?, ?, ?
@@ -55,41 +51,46 @@
  PRINT, num1 ?, ?
  THEN, be4, ?, ?
  IF, be5, ?, ?
- <, num1, num3, ?
+ <=, num1, num3, ?
  PRINT, num3 ?, ?
  THEN, be5, ?, ?
  THEN, be3, ?, ?
  IF, be6, ?, ?
- <, num1, num2, ?
+ <=, num1, num2, ?
  IF, be7, ?, ?
  >, num2, num3, ?
  PRINT, num2 ?, ?
  THEN, be7, ?, ?
  IF, be8, ?, ?
- <, num2, num3, ?
+ <=, num2, num3, ?
  PRINT, num3 ?, ?
  THEN, be8, ?, ?
  THEN, be6, ?, ?
  PROCEDURE, ?, ?, ?
  PROCEDURE, factorial, ?, ?
  GET, M ?, ?
- =, N, lit1, ?
  WHILE, be9, ?, ?
+ >, M, lit0, ?
+ =, N, lit1, ?
+ WHILE, be10, ?, ?
  >, M, lit0, ?
  *, N, M, T1
  =, N, T1, ?
  -, M, lit1, T1
  =, M, T1, ?
- DO, be9, ?, ?
+ DO, be10, ?, ?
  PRINT, N ?, ?
+ GET, M ?, ?
+ DO, be9, ?, ?
  PROCEDURE, ?, ?, ?
  PROCEDURE, recursfactorial, ?, ?
- IF, be10, ?, ?
- >, RM, lit0, ?
- *, RN, RM, T1
- =, RN, T1, ?
+ -, lit1, lit1, T1
+ IF, be11, ?, ?
+ >, RM, T1, ?
+ *, RN, RM, T2
+ =, RN, T2, ?
  -, RM, lit1, T1
  =, RM, T1, ?
  CALL, recursfactorial, ?, ?
- THEN, be10, ?, ?
+ THEN, be11, ?, ?
  PROCEDURE, ?, ?, ?

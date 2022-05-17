@@ -20,8 +20,8 @@ num3 $Varident ? DS 28
 factorial $Procident ? CS 16
 M $Varident ? DS 30
 N $Varident ? DS 32
-lit1 $integer 1 DS 34
-lit0 $integer 0 DS 36
+lit0 $integer 0 DS 34
+lit1 $integer 1 DS 36
 recursfactorial $Procident ? CS 20
 RM $Varident ? DS 38
 RN $Varident ? DS 40

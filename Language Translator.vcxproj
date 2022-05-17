@@ -147,8 +147,6 @@
     <Text Include="Java0.txt" />
     <Text Include="mainJava0.txt" />
     <Text Include="SymbolTable.txt" />
-    <Text Include="Test2Q3.txt" />
-    <Text Include="Test2Q5.txt" />
     <Text Include="TokenTable.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +159,7 @@
     <ClInclude Include="Nodes.hpp" />
     <ClInclude Include="Pass1.hpp" />
     <ClInclude Include="PrecedenceGenerator.hpp" />
+    <ClInclude Include="Scanner.hpp" />
     <ClInclude Include="Stack.hpp" />
     <ClInclude Include="SyntaxPass.hpp" />
   </ItemGroup>

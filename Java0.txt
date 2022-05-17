@@ -12,7 +12,7 @@ CLASS Pgm1 {
 		VAR numA, numB;
 		GET numA; GET numB;
 		IF numA > numB THEN PRINT numA;
-		IF numA < numB THEN PRINT numB;
+		IF numA <= numB THEN PRINT numB;
 	}
 
 	PROCEDURE GreatestNumber2(){
@@ -22,15 +22,15 @@ CLASS Pgm1 {
 			IF num1 > num3 THEN {
 				PRINT num1;
 			}
-			IF num1 < num3 THEN {
+			IF num1 <= num3 THEN {
 				PRINT num3;
 			}
 		}
-		IF num1 < num2 THEN {
+		IF num1 <= num2 THEN {
 			IF num2 > num3 THEN {
 				PRINT num2;
 			}
-			IF num2 < num3 THEN {
+			IF num2 <= num3 THEN {
 				PRINT num3;
 			}
 		}
@@ -39,17 +39,21 @@ CLASS Pgm1 {
 	PROCEDURE factorial(){
 		VAR M, N;
 		
-		GET M; N = 1;
+		GET M;
 		WHILE M > 0 DO {
-			N = N * (M);
-			M = M - 1;
+			N = 1;
+			WHILE M > 0 DO {
+				N = N * (M);
+				M = M - 1;
+			}
+			PRINT N;
+			GET M;
 		}
-		PRINT N;
 	}
 
 	PROCEDURE recursfactorial(){
 		VAR  RM, RN;
-		IF RM > 0 THEN {
+		IF RM > 1 - 1 THEN {
 			RN = RN * (RM);
 			RM = RM - 1;
 			CALL recursfactorial();
@@ -58,12 +62,8 @@ CLASS Pgm1 {
 	CALL procC1(); 
 	CALL GreatestNumber(); 
 	CALL GreatestNumber2(); 
-	
-	M = 1;
-	WHILE M > 0 DO {
-		CALL factorial();
-	}
-	RM = 1;
+	CALL factorial();
+	GET RM;
 	WHILE RM > 0 DO {
 		RN = 1;
 		CALL recursfactorial();

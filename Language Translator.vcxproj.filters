@@ -41,12 +41,6 @@
     <Text Include="Grammar.txt">
       <Filter>IO Files</Filter>
     </Text>
-    <Text Include="Test2Q3.txt">
-      <Filter>IO Files</Filter>
-    </Text>
-    <Text Include="Test2Q5.txt">
-      <Filter>IO Files</Filter>
-    </Text>
     <Text Include="Quads.txt">
       <Filter>IO Files</Filter>
     </Text>
@@ -86,6 +80,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Assembler.hpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scanner.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

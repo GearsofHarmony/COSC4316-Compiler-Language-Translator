@@ -57,6 +57,7 @@ const char NonTermList[NumNonTerm][18] =
 	"exp$             ",
 	"term$            ",
 	"fac$             ",
+//======================
 	"ident$           ",
 	"integer$         ",
 	"Pgmident$        ",

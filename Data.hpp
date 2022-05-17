@@ -27,6 +27,12 @@ private:
 	}
 public:
 	Data() { data = new Type[size]; };
+	Data(const Data& inVal) 
+	{
+		this->data = new Type[size];
+		for (int zz = 0; zz <= inVal.top; zz++)
+			this->push(inVal.data[zz]);
+	};
 	~Data() { if (data != NULL) { delete[] data; data = 0; } };
 	Data& operator=(const Data& inVal)
 	{

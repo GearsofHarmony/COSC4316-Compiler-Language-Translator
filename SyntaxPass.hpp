@@ -1,11 +1,11 @@
 #ifndef SYNTAXPASS_HPP
 #define SYNTAXPASS_HPP
-#include "Constants.h"
-#include "Data.hpp"
-#include "Stack.hpp"
-#include "Pass1.hpp"
-#include "Grammar.hpp"
-#include "PrecedenceGenerator.hpp"
+#include"Constants.h"
+#include"Data.hpp"
+#include"Stack.hpp"
+#include"Scanner.hpp"
+#include"Grammar.hpp"
+#include"PrecedenceGenerator.hpp"
 
 namespace SyntaxDBG { const bool DBG = 0; };
 struct TableID
@@ -91,89 +91,120 @@ struct Entry
 	Data<unsigned char> value;
 	bool isDS;
 	int memLoc;
+	Entry& operator=(const Entry& inVal)
+	{
+		this->name = inVal.name;
+		this->value = inVal.value;
+		this->type = inVal.type;
+		this->isDS = inVal.isDS;
+		this->memLoc = inVal.memLoc;
+		return *this;
+	}
+	friend std::ostream& operator<<(std::ostream& cout, const Entry& data)
+	{
+		Data<unsigned char> temp(data.name);
+		Data<unsigned char> temp1(data.value);
+		for (int ii = 0; ii <= temp.Size(); ii++)
+		{
+			cout << temp.read(ii);
+		}
+		cout << data.type << ' ';
+		for (int ii = 0; ii <= temp1.Size(); ii++)
+		{
+			cout << temp1.read(ii);
+		}
+		if (data.isDS)
+			cout << " DS ";
+		else
+			cout << " CS ";
+		cout << data.memLoc;
+		return cout;
+	}
 };
 
 class SymbolTableReader
 {
 private:
+	Data<Entry> Table;
 	DecisionTable decTable;
-	int scanSymTable(Scanner& scan, Entry& data)
+	void buildTableNMem()
 	{
 		const char* DS = "DS$";
 		const char* CS = "CS$";
+		Scanner scan(SymbolFile, "SSCN$");
 		Data<unsigned char> temp;
-		int nextState = 0;
+		Entry data;
 		int input = 0;
-		bool finished = false;
-		while (!finished)
+		do
 		{
-			switch (nextState)
+			int nextState = 0;
+			bool finished = false;
+			while (!finished)
 			{
-			case 0: nextState = decTable.index2D(nextState, input = scan.parse(&data.name)); break;
-			case 1: nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
-			case 2: nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
-			case 3: data.type = getID(input, &temp); nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
-			case 4: data.value = temp; nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
-			case 5:
-				for (int xx = 0; xx < 4; xx++)
+				switch (nextState)
 				{
-					if (DS[xx] != temp.read(xx))
+				case 0: nextState = decTable.index2D(nextState, input = scan.parse(&data.name)); break;
+				case 1: nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
+				case 2: nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
+				case 3: data.type = getID(input, &temp); nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
+				case 4: data.value = temp; nextState = decTable.index2D(nextState, scan.parse(&temp)); break;
+				case 5:
+					for (int xx = 0; xx < 4; xx++)
 					{
-						if (DS[xx] == '$' && xx > temp.Size())
+						if (DS[xx] != temp.read(xx))
 						{
-							data.isDS = 1;
+							if (DS[xx] == '$' && xx > temp.Size())
+							{
+								data.isDS = 1;
+							}
+							break;
 						}
-						break;
 					}
-				}
-				for (int xx = 0; xx < 4; xx++)
-				{
-					if (CS[xx] != temp.read(xx))
+					for (int xx = 0; xx < 4; xx++)
 					{
-						if (CS[xx] == '$' && xx > temp.Size())
+						if (CS[xx] != temp.read(xx))
 						{
-							data.isDS = 0;
+							if (CS[xx] == '$' && xx > temp.Size())
+							{
+								data.isDS = 0;
+							}
+							break;
 						}
-						break;
 					}
-				}
-				nextState = decTable.index2D(nextState, scan.parse(&temp));
-				break;
-			case 6: finished = true;
-				data.memLoc = (temp.read(0) - 0x30);
-				for (int ii = 1; ii <= temp.Size(); ii++)
-				{
-					data.memLoc = 10 * (temp.read(ii) - 0x30);
-				}
-			default: finished = true; break;
-			};
-		}
-		return input;
+					nextState = decTable.index2D(nextState, scan.parse(&temp));
+					break;
+				case 6:
+					data.memLoc = (temp.read(0) - 0x30);
+					for (int ii = 1; ii <= temp.Size(); ii++)
+					{
+						data.memLoc = 10 * data.memLoc + (temp.read(ii) - 0x30);
+					}
+					Table.push(data);
+				default: finished = true; break;
+				};
+			}
+		} while (input != IDeof);
+		//if (SyntaxDBG::DBG) { for (int ii = 0; ii <= Table.Size(); ii++) { std::cout << Table.read(ii) << '\n'; } }
 	}
 public:
-	SymbolTableReader(const char* table)
+	SymbolTableReader(const char* table = "tSTR$")
 	{
 		decTable.buildTable(table);
+		buildTableNMem();
 	}
 	TableID find(Data<unsigned char>* inVal)
 	{
-		Scanner scan(SymbolFile, "SSCN$");
-		int tableIndex = 0;
-		int input = 0;
 		inVal->push('$');
-		do
+		for (int tableIndex = 0; tableIndex <= Table.Size(); tableIndex++)
 		{
-			Entry data;
-			input = scanSymTable(scan, data);
 			for (int ii = 0; ii <= inVal->Size(); ii++)
 			{
-				if (inVal->read(ii) != data.name.read(ii))
+				if (inVal->read(ii) != Table.read(tableIndex).name.read(ii))
 				{
-					if (inVal->read(ii) == '$' && ii > data.name.Size())
+					if (inVal->read(ii) == '$' && ii > Table.read(tableIndex).name.Size())
 					{
-						inVal = &data.name;
-						input = IDeof;
-						switch (data.type.type)
+						inVal->pop();
+						switch (Table.read(tableIndex).type.type)
 						{
 						case 23: return TableID(tableIndex, 1);
 						case 24: return TableID(tableIndex, 2);
@@ -188,13 +219,12 @@ public:
 			}
 			for (int ii = 0; ii <= inVal->Size(); ii++)
 			{
-				if (inVal->read(ii) != data.value.read(ii))
+				if (inVal->read(ii) != Table.read(tableIndex).value.read(ii))
 				{
-					if (inVal->read(ii) == '$' && ii > data.value.Size())
+					if (inVal->read(ii) == '$' && ii > Table.read(tableIndex).value.Size())
 					{
-						inVal = &data.value;
-						input = IDeof;
-						switch (data.type.type)
+						inVal->pop();
+						switch (Table.read(tableIndex).type.type)
 						{
 						case 23: return TableID(tableIndex, 1);
 						case 24: return TableID(tableIndex, 2);
@@ -207,45 +237,18 @@ public:
 					break;
 				}
 			}
-			tableIndex++;
-		} while (input != IDeof);
+		}
+		inVal->pop();
 		return TableID(0, 0);
 	}
-	void check(Data<unsigned char>* inVal, TableID seek)
-	{
-		Scanner scan(SymbolFile, "SSCN$");
-		int input;
-		int tableIndex = 0;
-		do
-		{
-			Entry data;
-			input = scanSymTable(scan, data);
-			if (seek.index == tableIndex)
-			{
-				*inVal = data.name;
-				input = IDeof;
-			}
-			tableIndex++;
-		} while (input != IDeof);
-	}
+	void check(Data<unsigned char>* inVal, TableID seek) { *inVal = Table.read(seek.index).name; }
 	int getIDENT(Data<unsigned char>* name, Data<unsigned char>* value, TableID seek)
 	{
-		Scanner scan(SymbolFile, "SSCN$");
-		int input;
-		int tableIndex = 0;
-		do
-		{
-			Entry data;
-			input = scanSymTable(scan, data);
-			if (seek.index == tableIndex)
-			{
-				*name = data.name;
-				*value = data.value;
-				return data.type.type;
-			}
-			tableIndex++;
-		} while (input != IDeof);
-		return input;
+		if (seek.index > Table.Size())
+			return IDeof;
+		*name = Table.read(seek.index).name;
+		*value = Table.read(seek.index).name;
+		return Table.read(seek.index).type.type;
 	}
 	void fillStack(Stack<ObjID>& stack)
 	{
@@ -297,7 +300,7 @@ struct Quad
 	}
 	friend std::ostream& operator<<(std::ostream& cout, const Quad& data)
 	{
-		SymbolTableReader symbolTable("tSTR$");
+		static SymbolTableReader symbolTable("tSTR$");
 		Data<unsigned char> temp;
 		switch (data.op.id.type)
 		{
@@ -422,7 +425,7 @@ class SyntaxPass
 private:
 	FileOut fout;
 	DecisionTable decTable;
-	SymbolTableReader* symbolTable = 0;
+	SymbolTableReader symbolTable;
 	Data<Quad> idStack, qStack, stmtStack;
 	Data<ObjID> BE;
 	bool terminated = false;
@@ -527,7 +530,6 @@ private:
 											{
 												qStack.push(idStack.pop());
 											}
-											if (SyntaxDBG::DBG) { for (int ii = 0; ii <= qStack.Size(); ii++) { std::cout << qStack.read(ii); } std::cout << '\n'; }
 											break;
 										case IDProc:
 											while (qStack.Size() >= 0 && !qStack.read(qStack.Size()).op.id.cmp(Grammar::ID(1, IDProc)))
@@ -540,7 +542,6 @@ private:
 												qStack.push(idStack.pop());
 											}
 											qStack.push(Quad(data.read(ii), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
-											if (SyntaxDBG::DBG) { for (int ii = 0; ii <= qStack.Size(); ii++) { std::cout << qStack.read(ii); } std::cout << '\n'; }
 											break;
 										case IDCall:
 											qStack.push(Quad(data.read(ii), data.read(ii - 1), ObjID(TableID(0, 0), Grammar::ID(1, IDWut)), ObjID(TableID(0, 0), Grammar::ID(1, IDWut))));
@@ -599,7 +600,7 @@ private:
 										case IDmop:
 										case IDdivop:
 											temp.empty(); temp.push('T'); temp.push((0x30 + ++TVar));
-											check.name = symbolTable->find(&temp);
+											check.name = symbolTable.find(&temp);
 											qStack.push(Quad(data.read(ii), data.read(ii + 1), data.read(ii - 1), check));
 											data.empty(); break;
 										case IDLRop:
@@ -612,8 +613,8 @@ private:
 											data.empty(); break;
 										case IDassign:
 											temp.empty();
-											symbolTable->check(&temp, data.read(ii + 1).name);
-											check.name = symbolTable->find(&temp);
+											symbolTable.check(&temp, data.read(ii + 1).name);
+											check.name = symbolTable.find(&temp);
 											if (check.name.type == 4 && (!check.id.cmp(Grammar::ID(0, 2)) && !check.id.cmp(Grammar::ID(0, 3))))
 											{
 												std::cout << "Cannot redefine Constant Variable!\n";
@@ -777,15 +778,10 @@ public:
 		fout.openFile(outFile);
 		decTable.buildTable(table);
 	}
-	~SyntaxPass()
-	{
-		delete symbolTable; symbolTable = 0;
-	}
 	void Pass2(PrecTableGen& precTable)
 	{
-		symbolTable = new SymbolTableReader("tSTR$");
 		Stack<ObjID> stack(255, 2);
-		symbolTable->fillStack(stack);
+		symbolTable.fillStack(stack);
 		ObjID YeildTo = ObjID(TableID(0, 0), Grammar::ID(1, IDEval));
 		ObjID EMPTY = ObjID(TableID(0, 0), Grammar::ID(0, 11));
 		stack.push(EMPTY);
@@ -825,7 +821,6 @@ public:
 		{
 			printMat(precTable.OPG(List), "OPG\n");
 			printMat(precTable.PGTable(List), "PG\n");
-			printMat(precTable.generateWithin(List), "Within\n");
 			printMat(precTable.testTable(decTable.index2D(EMPTY.id.isTerm, EMPTY.id.type), List), "Empty\n");
 		}
 		int counter = 0;

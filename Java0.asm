@@ -17,11 +17,11 @@ section	.data
 	ResultEnd	equ	$-Result
 	num	times	6	db	'ABCDEF'
 	numEnd	equ	$-num
-	lit10	dw	10
-	lit2	dw	2
-	lit4	dw	4
-	lit1	dw	1
-	lit0	dw	0
+	lit10	dw	lit10
+	lit2	dw	lit2
+	lit4	dw	lit4
+	lit0	dw	lit0
+	lit1	dw	lit1
 section	.bss
 	TempChar	RESB	1
 	testchar	RESB	1
@@ -57,19 +57,10 @@ _start:
 	CALL	procC1
 	CALL	GreatestNumber
 	CALL	GreatestNumber2
-	mov	eax,M
-	mov	bx,[lit1]
-	mov	[eax],bx
-wbe11:NOP
-	mov	ax,[M]
-	cmp	ax,[lit0]
-	jng	be11
 	CALL	factorial
-	jmp	wbe11
-be11:NOP
-	mov	eax,RM
-	mov	bx,[lit1]
-	mov	[eax],bx
+	CALL	GetAnInteger
+	mov	ax,[ReadInt]
+	mov	[RM],ax
 wbe12:NOP
 	mov	ax,[RM]
 	cmp	ax,[lit0]
@@ -80,11 +71,6 @@ wbe12:NOP
 	CALL	recursfactorial
 	mov	ax,[RN]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 	CALL	GetAnInteger
 	mov	ax,[ReadInt]
 	mov	[RM],ax
@@ -139,11 +125,6 @@ procC1:
 	mov	[eax],bx
 	mov	ax,[ans]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 	ret
 GreatestNumber:
 	CALL	GetAnInteger
@@ -157,22 +138,12 @@ GreatestNumber:
 	jng	be1
 	mov	ax,[numA]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 be1:NOP
 	mov	ax,[numA]
 	cmp	ax,[numB]
-	jnl	be2
+	jnle	be2
 	mov	ax,[numB]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 be2:NOP
 	ret
 GreatestNumber2:
@@ -193,48 +164,28 @@ GreatestNumber2:
 	jng	be4
 	mov	ax,[num1]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 be4:NOP
 	mov	ax,[num1]
 	cmp	ax,[num3]
-	jnl	be5
+	jnle	be5
 	mov	ax,[num3]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 be5:NOP
 be3:NOP
 	mov	ax,[num1]
 	cmp	ax,[num2]
-	jnl	be6
+	jnle	be6
 	mov	ax,[num2]
 	cmp	ax,[num3]
 	jng	be7
 	mov	ax,[num2]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 be7:NOP
 	mov	ax,[num2]
 	cmp	ax,[num3]
-	jnl	be8
+	jnle	be8
 	mov	ax,[num3]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
 be8:NOP
 be6:NOP
 	ret
@@ -242,13 +193,17 @@ factorial:
 	CALL	GetAnInteger
 	mov	ax,[ReadInt]
 	mov	[M],ax
-	mov	eax,N
-	mov	bx,[lit1]
-	mov	[eax],bx
 wbe9:NOP
 	mov	ax,[M]
 	cmp	ax,[lit0]
 	jng	be9
+	mov	eax,N
+	mov	bx,[lit1]
+	mov	[eax],bx
+wbe10:NOP
+	mov	ax,[M]
+	cmp	ax,[lit0]
+	jng	be10
 	mov	ax,[N]
 	mov	bx,[M]
 	mul	bx
@@ -262,26 +217,29 @@ wbe9:NOP
 	mov	eax,M
 	mov	bx,[T1]
 	mov	[eax],bx
-	jmp	wbe9
-be9:NOP
+	jmp	wbe10
+be10:NOP
 	mov	ax,[N]
 	CALL	Print
-	mov	eax,sys_write
-	mov	ebx,stdout
-	mov	ecx,Result
-	mov	edx,ResultEnd
-	int	0x80
+	CALL	GetAnInteger
+	mov	ax,[ReadInt]
+	mov	[M],ax
+	jmp	wbe9
+be9:NOP
 	ret
 recursfactorial:
+	mov	ax,[lit1]
+	sub	ax,[lit1]
+	mov	[T1],ax
 	mov	ax,[RM]
-	cmp	ax,[lit0]
-	jng	be10
+	cmp	ax,[T1]
+	jng	be11
 	mov	ax,[RN]
 	mov	bx,[RM]
 	mul	bx
-	mov	[T1],ax
+	mov	[T2],ax
 	mov	eax,RN
-	mov	bx,[T1]
+	mov	bx,[T2]
 	mov	[eax],bx
 	mov	ax,[RM]
 	sub	ax,[lit1]
@@ -290,7 +248,7 @@ recursfactorial:
 	mov	bx,[T1]
 	mov	[eax],bx
 	CALL	recursfactorial
-be10:NOP
+be11:NOP
 	ret
 GetAnInteger:
 	mov	eax,sys_write
@@ -333,4 +291,9 @@ ConvertLoop:NOP
 	dec	ebx
 	cmp	ebx,ResultValue
 	jge	ConvertLoop
+	mov	eax,sys_write
+	mov	ebx,stdout
+	mov	ecx,Result
+	mov	edx,ResultEnd
+	int	0x80
 	ret

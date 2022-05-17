@@ -1,8 +1,8 @@
 #ifndef ASSEMBLER_HPP
 #define ASSEMBLER_HPP
-#include "Constants.h"
-#include "Pass1.hpp"
-#include "SyntaxPass.hpp"
+#include"Constants.h"
+#include"Scanner.hpp"
+#include"SyntaxPass.hpp"
 
 class AssemblyGenerator
 {
@@ -109,11 +109,6 @@ public:
 				scan.parse(&data); scan.parse(&data); fout.writeData(&data);
 				fout.write("]\n");
 				fout.write("\tCALL\tPrint\n");
-				fout.write("\tmov\teax,sys_write\n");
-				fout.write("\tmov\tebx,stdout\n");
-				fout.write("\tmov\tecx,Result\n");
-				fout.write("\tmov\tedx,ResultEnd\n");
-				fout.write("\tint\t0x80\n");
 				break;
 			case IDaddop:
 				fout.write("\tmov\tax,[");
@@ -270,6 +265,11 @@ public:
 		fout.write("\tdec\tebx\n");
 		fout.write("\tcmp\tebx,ResultValue\n");
 		fout.write("\tjge\tConvertLoop\n");
+		fout.write("\tmov\teax,sys_write\n");
+		fout.write("\tmov\tebx,stdout\n");
+		fout.write("\tmov\tecx,Result\n");
+		fout.write("\tmov\tedx,ResultEnd\n");
+		fout.write("\tint\t0x80\n");
 		fout.write("\tret\n");
 	}
 };

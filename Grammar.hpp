@@ -1,10 +1,11 @@
 #ifndef GRAMMAR_HPP
 #define GRAMMAR_HPP
 #include"Constants.h"
-#include"FileIO.hpp"
 #include"Data.hpp"
 #include"Nodes.hpp"
 #include"Stack.hpp"
+#include"FileIO.hpp"
+#include"Scanner.hpp"
 
 namespace GrammarDBG { const bool DBG = 0; };
 
@@ -138,8 +139,7 @@ namespace Grammar
 				{
 				case 0:
 					scan->parse(&data);
-					temp.type = checkNonTerm(&data);
-					temp.isTerm = 0;
+					temp = Grammar::ID(0, checkNonTerm(&data));
 					nextState = decTable.index3D(nextState, temp.isTerm, temp.type);
 					break;
 				case 1:
@@ -222,7 +222,7 @@ namespace Grammar
 						if(!stack->isempty(1))
 						{
 							cmpID = stack->pop(1);
-							if (GID.type == cmpID.type && GID.isTerm == cmpID.isTerm)
+							if (GID.cmp(cmpID)/*GID.type == cmpID.type && GID.isTerm == cmpID.isTerm*/)
 								Node<Grammar::IDNode>::insertLeft(&List[GID.type], Grammar::IDNode(tempID));
 							stack->push(cmpID, 1);
 						}

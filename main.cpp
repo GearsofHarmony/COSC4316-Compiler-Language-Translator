@@ -1,10 +1,10 @@
 #define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#include <time.h>
-#include "Pass1.hpp"
-#include "SyntaxPass.hpp"
-#include "Assembler.hpp"
+#include<stdlib.h>
+#include<crtdbg.h>
+#include<time.h>
+#include"Pass1.hpp"
+#include"SyntaxPass.hpp"
+#include"Assembler.hpp"
 
 /**
  * Function to create decision table file in binary.
@@ -386,7 +386,7 @@ void TABLE()
 		 2, 2,
 		 2, 2, 2, 2,
 		127, 3,127, 4,
-		// Grammar Parse Table 2
+/// Grammar Parse Table 2 ==================================================================
 		// State 0
 		// False
 		 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,

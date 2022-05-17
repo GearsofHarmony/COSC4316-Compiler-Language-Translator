@@ -1,8 +1,8 @@
 #ifndef PRECEDENCEGENERATOR_HPP
 #define PRECEDENCEGENERATOR_HPP
-#include <iostream>
-#include "Constants.h"
-#include "Grammar.hpp"
+#include<iostream>
+#include"Constants.h"
+#include"Grammar.hpp"
 
 namespace PrecGenDBG { const bool DBG = 0; };
 
@@ -114,7 +114,7 @@ void printMat(const MatN& Result, const char* msg = "Table\n")
 	std::cout << msg;
 	for (int row = 0; row < MatN::MatNSize; row++)
 	{
-		if (row == NumNonTerm)
+		if (row == NumNonTerm || row == 11)
 			std::cout << '\n';
 		if (row <= 9)
 			std::cout << ' ';
@@ -122,14 +122,18 @@ void printMat(const MatN& Result, const char* msg = "Table\n")
 		for (int col = 0; col < MatN::MatNSize; col++)
 		{
 			int temp = 0x7 & Result.mat[row][col];
-			if (col == NumNonTerm)
+			if (col == NumNonTerm || col == 11)
 				std::cout << ' ';
 			if (temp <= 9)
 				std::cout << ' ';
 			if (temp <= 99)
 				std::cout << ' ';
 			std::cout << temp;
+			if (col == 11)
+				std::cout << ' ';
 		}
+		if (row == 11)
+			std::cout << '\n';
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
