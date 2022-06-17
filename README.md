@@ -6,7 +6,14 @@ The compiler is a Deterministic Finite-State Automaton (DFSA) utilizing the bott
 ### Notes
 - The compiler does not inform the user of any syntax errors and fails silently. 
 - The assembly code is NASM for Linux and is not optimized.
-- Linux terminal command: *nasm -felf64 Java0.asm && ld -o Java0 Java0.o && ./Java0*
+- Linux terminal command compilation and execution **64 Bit**:
+```
+nasm -felf64 Java0.asm && ld Java0.o -o Java0 && ./Java0
+```
+- Linux terminal command compilation and execution **32 Bit**:
+```
+nasm -felf32 Java0.asm && ld -m elf_i386 Java0.o -o Java0 && ./Java0
+```
 - Basic read and write to terminal, prompt only asks for 2 Byte integer.
 - No negative values; Everything is treated as unsigned values.
 
