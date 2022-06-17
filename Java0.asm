@@ -17,11 +17,11 @@ section	.data
 	ResultEnd	equ	$-Result
 	num	times	6	db	'ABCDEF'
 	numEnd	equ	$-num
-	lit10	dw	lit10
-	lit2	dw	lit2
-	lit4	dw	lit4
-	lit0	dw	lit0
-	lit1	dw	lit1
+	lit10	dw	10
+	lit2	dw	2
+	lit4	dw	4
+	lit0	dw	0
+	lit1	dw	1
 section	.bss
 	TempChar	RESB	1
 	testchar	RESB	1

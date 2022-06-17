@@ -247,7 +247,7 @@ public:
 		if (seek.index > Table.Size())
 			return IDeof;
 		*name = Table.read(seek.index).name;
-		*value = Table.read(seek.index).name;
+		*value = Table.read(seek.index).value;
 		return Table.read(seek.index).type.type;
 	}
 	void fillStack(Stack<ObjID>& stack)
